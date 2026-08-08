@@ -1,0 +1,146 @@
+
+%\subsection{Overview of the Neural Shape Metrics Framework}
+\subsection{Comparing neural populations as points in a metric space}
+
+
+Consider a set of neural recordings collected across $K$ biological systems---for example, $K$ different animals, $K$ behavioral sessions from the same animal, or recordings from $K$ different brain regions (\textit{Fig.}~\ref{fig:schematic}a-c).
+The activity of each neural system is recorded at $M$ measurement points, corresponding to different experimental conditions as well as different time points.
+For example, neural responses could be measured in response to $C$ conditions (e.g. distinct sensory stimuli or trained motor actions) over $T$ time points per condition.
+This would result in a total of $M = S T$ measurements.
+
+Our high-level goal is to characterize the extent to which these $K$ neural systems are similar or different from each other across these measurement points.
+To simplify the exposition, we will assume that each neural population is composed of $N$ neurons.
+This assumption is often violated.
+However, all the methods we outline can be trivially extended to the case of unequal neural population sizes (see \textit{Methods} and \cite{harvey2024duality} for mathematical proofs).
+
+
+We will focus on comparing trial-averaged neural responses (see \textit{Discussion} for extensions that consider single-trial statistics).
+In this setting, the data collected from $K$ neural systems are represented by a set of $N \times M$ matrices, $\mbX_1, \mbX_2, \dots, \mbX_K$.
+Each row corresponds to a neuron's tuning curve the $M$ measurement points (task conditions and time points).
+Each column corresponds to an $N$-dimensional population response to one of the experimental measurement.
+\textit{Figure}~\ref{fig:schematic}d illustrates an example where the measurements span a 1-dimensional space, resulting in a 1-dimensional, smooth manifold structure within the neural firing rate space.
+
+% As a simple first example, we will consider tasks that produce smooth, periodic tuning curves encoded by a task parameter $\theta \in [-\pi, \pi)$, which is discretized into $M$ bins.
+% This is a generic form of tuning that pervades the neuroscience literature.
+% Examples include representations of heading direction (e.g. \cite{chaudhuri,duszkiewicz}), orientation of a visual grating (e.g. \cite{hubel}), target locations in radial reaching tasks (e.g. \cite{georgopoulos}), and saccade targets in working memory tasks (e.g \cite{funahashi}).
+% In all of these cases, the neural firing rates will trace a smooth ring manifold in $N$-dimensional firing rate space (\textit{Fig.}~\ref{fig:schematic}d).
+
+Our first objective is to define a family of distance functions $d(\mbX_i, \mbX_j)$ that quantify the dissimilarity between two neural systems.
+The principal challenge is that the neurons are randomly sampled and labeled in each system and so cannot be immediately compared.
+This can be interpreted geometrically as two neural manifolds being randomly oriented with respect to each other in firing rate space (\textit{Fig.}~\ref{fig:schematic}e, top).
+Although neural dimensions are not matched between systems, the $M$ measurements are shared (coloring in \textit{Fig.}~\ref{fig:schematic}d-e).
+Thus, we can consider \textit{aligning} the two manifolds through some transformation and then computing some measure of distance (\textit{Fig.}~\ref{fig:schematic}e, bottom). 
+% This is the motivating intuition for the shape metrics framework as well as several existing methods (e.g. linear predictivity scores and CCA).
+% Intuitively, difference choices for the alignment transformation lead to different notions of distance between systems.
+
+We will argue that it is useful to focus on distances which satisfy the following three axiomatic properties:
+\begin{align}
+\label{eq:metric-space-equivalence}
+\text{Equivalence:} & \quad d\left(\mbX_i, \mbX_j\right)=0 \qquad \text{if and only if $\mbX_i$ and $\mbX_j$ are ``perfectly alignable''}\\
+\label{eq:metric-space-symmetry}
+\text{Symmetry:} & \quad d\left(\mbX_i, \mbX_j \right) =d\left(\mbX_j, \mbX_i \right)\\
+\label{eq:metric-space-triangle}
+\text{Triangle Inequality:} & \quad d\left(\mbX_i, \mbX_j \right) \leq d\left(\boldsymbol{X}_i, \mbX_k \right) + d\left(\mbX_k, \mbX_j \right)
+\end{align}
+where $\mbX_i$ and $\mbX_j$ are said to be ``perfectly alignable'' if the transform class specified by the practitioner is flexible enough to superimpose the two manifolds.
+
+In mathematics, notions of distance that satisfy \cref{eq:metric-space-equivalence,eq:metric-space-symmetry,eq:metric-space-triangle} are said to define a \textit{metric space}.
+Intuitively, metric spaces are useful because they enable us to spatially reason about data.
+That is, we can envision each of our recordings from $K$ neural systems $\mbX_1, \dots, \mbX_K$ as points within the space of all possible neural recordings (\textit{Fig.}~\ref{fig:schematic}f).
+That is, in this (potentially high-dimensional) metric space, an entire neural system is represented by a single point, and the distances between points indicate the geometric similarity or dissimilarity of the systems.   
+These properties allow us to leverage methods such as clustering and nearest-neighbor regression (\textit{Fig.}~\ref{fig:schematic}g) and to do so with theoretical guarantees \parencite[see e.g.][]{Cover1967,Dasgupta2005}.
+
+The \textit{Procrustes shape distance} \parencite{schonemann1966generalized} is a metric that satisfies \cref{eq:metric-space-equivalence,eq:metric-space-symmetry,eq:metric-space-triangle}, and most of our analyses will leverage this distance as a running example of the shape metrics framework.
+If we assume that each neuron's tuning curve has been pre-processed to be mean centered (i.e. rows of $\mbX_i$ and $\mbX_j$ have mean zero), then the Procrustes distance can be written as:
+\begin{equation}
+\label{eq:procrustes-distance}
+d_{\text{Proc}}(\mbX_i, \mbX_j) = \min_{\mbQ \in \cO(N)} \Vert \mbQ \mbX_i - \mbX_j \Vert_F
+\end{equation}
+Here, $\cO(N)$ is the set of $N \times N$ orthogonal matrices.
+Intuitively, $\mbQ$ encodes the optimal rotation and reflection that minimizes the sum of squared residuals between the two neural manifolds.
+The mean centering step ensures that the rotation and reflection is performed around the manifold's center of mass.
+
+% Establishing a metric space enables us to use a broad set of off-the-shelf analysis tools.
+% These methods take in a matrix of pairwise distances $\mbD_{ij} = d(\mbX_i, \mbX_j)$ and output unsupervised or supervised summaries of variability across the neural systems.
+% For example, we may be interested in studying individual variability across $K$ animal subjects.
+% To identify clusters of subjects with similar neural tuning, we may use hierarchical clustering methods, which work with theoretical guarantees in metric spaces~\parencite{Dasgupta2005}.
+% To visualize these clusters, we can use multidimensional scaling (MDS) and other vector embedding techniques~\parencite{Borg2005-gk}.
+% Further, if we measure a behavioral variable for each animal (e.g. performance on a task), we can use the distance relations between animals, based on neural data, to fit models that predict this behavior.
+% For example, nearest nearest neighbor regression works with theoretical guarantees in metric spaces~\parencite{Cover1967}, and we will later demonstrate that it works well in practice.
+
+% How can we define meaningful notions of distance between neural systems?
+% This problem is nontrivial because simple measures, such as the Euclidean distance:
+% \begin{equation}
+% \Vert \mbX_i - \mbX_j \Vert_F = \left ( \sum_{n=1}^{N} \sum_{m=1}^{M} \left(\mbX_i[n, m] - \mbX_j[n, m] \right)^2 \right )^{1/2}
+% \end{equation}
+% are clearly meaningless whenever neurons are not identified and one-to-one matched across neural systems (\hl{Figure}).
+% Intuitively, we need some way of \textit{aligning} the neural representations across two systems.
+% We propose to use a constrained set of linear transformations, parameterized by a matrix $\mbQ$, to perform this alignment.
+% Further, since it is common to pre-process neural data (e.g. by z-scoring each neuron) we propose to apply a user-defined function $\phi(\cdot)$ before fitting the alignment.
+% Putting these pieces together, we can define:
+% \begin{equation}
+% \label{eq:generalized-euclidean-shape-metric}
+% d(\mbX_i, \mbX_j) = \min_{\mbQ \in \cG} \Vert \mbQ \phi(\mbX_i) - \phi(\mbX_j) \Vert_F
+% \end{equation}
+% where $\cG$ denotes the set of allowable linear transformations.
+
+
+% \begin{equation}
+% \min_{\mbQ \in \reals^{N \times N}} \Vert \mbQ \mbX_i - \mbX_j \Vert_F \neq \min_{\mbQ \in \reals^{N \times N}} \Vert \mbX_i - \mbQ \mbX_j \Vert_F.
+% \end{equation}
+
+The Procrustes distance can be thought of as a constrained version of linear regression with an orthogonality constraint---i.e. a constraint such that the weight matrix must only encode a rotation and reflection of the firing rate space.
+Na\"ively dropping this restriction is problematic for constructing metric spaces.
+Indeed, for a generic $N \times N$ matrix of regression weights $\mbW$, the resulting distance score fails to even be symmetric:
+\begin{equation}
+\label{eq:naive-regression}
+\min_{\mbW_i} \Vert \mbW_i \mbX_i - \mbX_j \Vert_F \neq \min_{\mbW_j} \Vert \mbX_i - \mbW_j \mbX_j \Vert_F
+\end{equation}
+This method of measuring similarity would therefore be sensitive to the order in which systems, such as animals or brain regions, are compared \parencite{muzellec2026reverse}.
+
+Thus, simple forms of linear regression do not easily enable comparisons of neural systems within a metric space, as we show below.
+Of course, regressions and decoding analyses remain useful, complementary tools: precisely because they target a specific variable, they can reveal whether that information is present and readable by a downstream population—a question shape distances alone cannot answer. Indeed, we use decoding throughout this paper to validate and interpret the structure that shape distances reveal.
+
+% In our experience, the orthogonality constraint inherent to Procrustes distance is often useful to regularize the alignment transformation.
+% Nonetheless, this constraint can be relaxed by computing
+% \begin{equation}
+% \label{eq:whitened-procrustes-distance}
+% d_{\text{Linear}}(\mbX_i, \mbX_j) = d_{\text{Proc}}(\mbZ_i \mbX_i, \mbZ_j \mbX_j)
+% \end{equation}
+% as the distance, where $\mbZ_i$ and $\mbZ_j$ are $N \times N$ \textit{whitening matrices}.
+% This avoids the problem highlighted in \cref{eq:naive-regression} while also relaxing the orthogonality constraint inherent to Procrustes distance---i.e. we have that $d_{\text{Linear}}(\mbX_i, \mbX_j) = 0$ if any invertible linear transformation brings the two neural manifolds into alignment.
+% The resulting distance is a proper metric and has connections to CCA, as discussed in \textcite{Williams2021}.
+
+% Another, more stringent, metric we will utilize is the \textit{one-to-one matching distance}, which uses a permutation of the $N$ neurons to align the responses
+% \begin{equation}
+% \label{eq:one-to-one-matching}
+% d_{\text{Perm}}(\mbX_i, \mbX_j) = \min_{\mbP \in \mbPi(N)} \Vert \mbP \mbX_i - \mbX_j \Vert_F
+% \end{equation}
+% where $\mbP$ is an $N \times N$ permutation matrix.
+% Note that the set of permutation matrices, $\mbPi(N)$, is a subset of all orthogonal matrices, $\cO(N)$.
+% Therefore, the Procrustes distance is a less stringent measure of similarity in the sense that $d_{\text{Proc}}(\mbX_i, \mbX_j) \leq d_{\text{Perm}}(\mbX_i, \mbX_j)$.
+% \textcite{khosla2024soft} describe how to extend this distance to case where the two populations consist of unequal numbers of neurons.
+
+% In this section, we surveyed several metrics that satisfy the desirable properties of \cref{eq:metric-space-equivalence,eq:metric-space-symmetry,eq:metric-space-triangle}.
+% These belong to an even broader class of distances that are referred to as \textit{generalized shape metrics} \parencite{Williams2021}. 
+% Additional mathematical details are provided in the \textit{\nameref{sec:methods}}.
+
+
+
+
+% If we set $\phi(\mbX) = \mbX$ (i.e. no pre-processing) and allow $\mbQ$ to be any linear transformation, then equation~(\ref{eq:generalized-euclidean-shape-metric}) reduces to least-squares linear regression.
+% This is not a metric; indeed it is not even symmetric. Somewhat remarkably, if we simply constrain $\mbQ$ to be an orthogonal matrix---i.e. implementing a rotation and reflection in $N$-dimensional space---the resulting distance is a bona fide metric.
+% Formally, when we set $\cG$ equal to $\cO$ (the set of $N \times N$ orthogonal matrices) and $\phi(\mbX)$ performs mean-centering of each tuning curve, then equation (\ref{eq:generalized-euclidean-shape-metric}) becomes the \textit{Procrustes size-and-shape distance}~\parencite{Gower2004}.
+% Intuitively, this distance treats $\mbX_i$ and $\mbX_j$ as equivalent if they have the same ``size-and-shape'' but potentially different orientations in neural firing rate space (\hl{figure}).
+
+% Equation~(\ref{eq:generalized-euclidean-shape-metric}) encompasses many other possibilities beyond the Procrustes distance.
+% For instance, we can recover a metric that is closely related to CCA when we choose $\phi(\mbX)$ to be a whitening transformation and optimize over orthogonal matrices (i.e., $\cG = \cO$, \hl{supplement}).
+% This notion of distance is invariant to more general linear deformations, whereas Procrustes distance is only invariant to rotations in neural firing rate space.
+% Another useful metric for neuroscience applications is to optimize over permutations of the neurons instead of orthogonal transformations.
+% This too, produces a valid metric (\hl{supplement}), which intuitively treats two neural representations as equivalent only when one can find a one-to-one matching of the neurons.
+
+% It is important to emphasize that Equation~(\ref{eq:generalized-euclidean-shape-metric}) does not specify a single metric, but rather encompasses a broad family of metrics that quantify different aspects of representational geometry and provide complementary scientific insights.
+% We refer to these as \textit{generalized shape metrics}, since they generalize classical notions of shape distance \parencite{kendall2009shape}.
+% Furthermore, in \hl{Supplementary Text} we show that measures based on RSA, CKA, and CCA are all related to this framework, and some can even be viewed as special cases of shape metrics after some modification.
+% However, none of these existing approaches have been formulated in a way to satisfy and leverage all three criteria of a metric space. 
+

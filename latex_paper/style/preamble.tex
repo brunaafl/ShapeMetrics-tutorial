@@ -1,0 +1,99 @@
+
+\RequirePackage[l2tabu, orthodox]{nag}
+
+\usepackage[left=.75in, right=.75in, top=1.in, bottom=1.in]{geometry}
+
+% Import MathDesign (this brings along Bitstream Charter)
+% http://www.ctan.org/tex-archive/fonts/mathdesign/
+\usepackage[bitstream-charter]{mathdesign}
+\usepackage{amsmath}
+
+
+\usepackage[scaled=0.92]{PTSans}
+
+\usepackage{titling}
+
+% COLOR
+\usepackage[table,usenames,dvipsnames]{xcolor}
+\usepackage{tikz}
+
+% SPACING and TEXT
+\usepackage[final,expansion=alltext]{microtype}
+\usepackage[english]{babel}
+\usepackage[parfill]{parskip}
+\usepackage{afterpage}
+\usepackage{framed}
+\usepackage{verbatim}
+\usepackage{setspace}
+
+\usepackage[symbol]{footmisc}
+\renewcommand{\thefootnote}{\arabic{footnote}}
+
+% COUNTERS
+\usepackage[inline]{enumitem}
+\renewcommand{\labelenumi}{\color{black!67}{\arabic{enumi}.}}
+\renewcommand{\labelenumii}{{\color{black!67}(\alph{enumii})}}
+\renewcommand{\labelitemi}{{\color{black!67}\textbullet}}
+
+% FIGURES
+\usepackage{graphicx}
+\usepackage[labelfont={it, small}, font=small]{caption}
+\usepackage[format=hang]{subcaption}
+
+% THEOREMS
+\usepackage{amsthm}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+
+% BIBLIOGRAPHY
+\usepackage[
+backend=biber,
+style=authoryear,
+uniquelist=false,
+maxcitenames=2,
+doi=false,
+isbn=false,
+url=false,
+eprint=false,
+maxbibnames=20,
+sorting=ynt,
+sortcites
+]{biblatex}
+\AtEveryBibitem{\clearfield{month}}
+\AtEveryCitekey{\clearfield{month}}
+\AtEveryBibitem{\clearlist{language}}
+\renewbibmacro{in:}{}
+\addbibresource{refs.bib}
+
+% HYPERREF
+\usepackage[colorlinks,linktoc=all]{hyperref}
+\usepackage[all]{hypcap}
+\hypersetup{citecolor=MidnightBlue}
+\hypersetup{linkcolor=black}
+\hypersetup{urlcolor=MidnightBlue}
+
+% CLEVEREF must come after HYPERREF
+\usepackage[nameinlink]{cleveref}
+
+% COLOR DEFINITIONS
+\newcommand{\red}[1]{\textcolor{BrickRed}{#1}}
+\newcommand{\orange}[1]{\textcolor{BurntOrange}{#1}}
+\newcommand{\green}[1]{\textcolor{OliveGreen}{#1}}
+\newcommand{\blue}[1]{\textcolor{MidnightBlue}{#1}}
+\newcommand{\gray}[1]{\textcolor{black!60}{#1}}
+
+% ABSTRACT FORMATTING
+\makeatletter
+\renewenvironment{abstract}{%
+    \if@twocolumn
+      \section*{\abstractname}%
+    \else %% <- here I've removed \small
+      \begin{center}%
+        {\bfseries \Large\abstractname\vspace{\z@}}%  %% <- here I've added \Large
+      \end{center}%
+      \quotation
+    \fi}
+    {\if@twocolumn\else\endquotation\fi}
+\makeatother
+
+\usepackage{soul}
