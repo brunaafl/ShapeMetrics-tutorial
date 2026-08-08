@@ -8,25 +8,13 @@ modules: `data_fig/` is the only thing it needs.
 
 ```
 combined_figure.ipynb    the figure and its analyses
-data_fig/                precomputed inputs -- NOT in git, see below
-figure_ibl/              output; written by the notebook, not in git
+data_fig/                precomputed inputs, tracked (11 files, 6.7 MB)
+figure_ibl/              output; written by the notebook, not tracked
 ```
 
-**`data_fig/` is not tracked.** Only the notebook and this README are in the
-repository; the arrays and the generated figures stay local. Populate the
-directory before running:
-
-```
-mkdir -p data_fig figure_ibl
-cp <source>/data_fig/{all_dist_neural,all_dist_cc,all_c_corrs,dist_neural_nocv,\
-dist_cc_nocv,choices,means_dist_subject,dist_neural_asd,labels_arr}.npy \
-   <source>/data_fig/{region_info.csv,reaction_times.npz} data_fig/
-```
-
-The eleven files are listed with their shapes under *Inputs* below, so a fresh
-export can be checked against them. They total 6.7 MB and come from the
-upstream IBL pipeline, not from this notebook -- nothing here recomputes a
-distance matrix.
+`data_fig/` is in the repository, so a fresh clone runs with no setup beyond
+the environment. `figure_ibl/` is not -- the notebook creates it. The arrays
+come from the upstream IBL pipeline; nothing here recomputes a distance matrix.
 
 ## The figure
 
