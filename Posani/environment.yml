@@ -1,0 +1,36 @@
+# conda env create -f environment.yml && conda activate shapemetrics
+#
+# Runs everything in this folder: extract_selectivity.py, code/, analysis.py,
+# regression.py, notebook.ipynb, and the figure scripts of the three cloned repos.
+# The IBL and Allen data-access libraries (ONE-api, ibllib, allensdk) are deliberately
+# left out -- the analyses here start from the released RRR model, not from raw data.
+name: shapemetrics
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      # analysis
+      - numpy
+      - pandas
+      - scipy
+      - scikit-learn
+      - ijson              # streams the 1.3 GB RRR_selectivity.json
+      - mord               # threshold-based ordinal regression (Fig. 4d analogue)
+      - openpyxl           # reading supplementary xlsx tables
+      # plotting
+      - matplotlib
+      - seaborn
+      - tqdm
+      # notebook
+      - jupyter
+      - ipykernel
+      - nbconvert
+      # cross-check: our Procrustes distance against the reference implementation,
+      # pinned to the commit used by the shape-metrics paper
+      - git+https://github.com/ahwillia/netrep@0186b8a77ec1ebaf541cc8f7173cb2556df8a8f0
+      # used by the cloned figure scripts (Separability/)
+      - decodanda
+      # inspecting PDF figures (page size, embedded fonts)
+      - pypdf
