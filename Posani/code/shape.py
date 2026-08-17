@@ -40,6 +40,53 @@ def split_half(data, mode="temporal", n_pcs=25, n_sub=50, n_repeats=20, seed=0):
     return out / n_repeats
 
 
+def distance_and_targets(data, mode="temporal", n_pcs=25, n_side=33, n_repeats=20, seed=0):
+    """Distances and per-region selectivity from DISJOINT halves of each region.
+
+    A region's own selectivity helps set where it sits, so regressing one on the
+    other with the same neurons is circular. Here one half of each region builds
+    the distance matrix and the other half supplies the targets; `n_side` is
+    capped by the smallest region, so it is lower than the `n_sub` used for the
+    published matrix and the coordinates are correspondingly noisier.
+
+    Returns (K x K distances, K x n_vars mean selectivity).
+    """
+    rng = np.random.default_rng(seed)
+    tmp, sel = data.features(mode), data.features("selectivity")
+    D = np.zeros((len(data.regions), len(data.regions)))
+    T = np.zeros((len(data.regions), sel.shape[1]))
+    for _ in range(n_repeats):
+        Xs = []
+        for k, a in enumerate(data.regions):
+            idx = rng.choice(data.neurons(a), 2 * n_side, replace=False)
+            Xs.append(preprocess(tmp[idx[:n_side]].T, n_pcs))
+            T[k] += sel[idx[n_side:]].mean(0)
+        D += pairwise(Xs)
+    return D / n_repeats, T / n_repeats
+
+
+def silhouette_sweep(E, ks, seed=42):
+    """Best-of-k-means silhouette at each k, for a set of points."""
+    from sklearn.cluster import KMeans
+    from sklearn.metrics import silhouette_score
+    return np.array([silhouette_score(E, KMeans(k, n_init=50, init="random",
+                     random_state=seed).fit_predict(E)) for k in ks])
+
+
+def gaussian_null(E, ks, n_draw=500, seed=42):
+    """The same sweep on draws from ONE Gaussian matched to E's mean and covariance.
+
+    Silhouette cannot score k = 1, so the "no clusters" hypothesis has to be
+    simulated rather than evaluated: a single continuous cloud with the real
+    spread, swept identically. This is the null of Posani et al.'s clustering
+    analysis, here applied to regions rather than neurons.
+    """
+    rng = np.random.default_rng(seed)
+    mu, S = E.mean(0), np.cov(E.T)
+    return np.array([silhouette_sweep(rng.multivariate_normal(mu, S, len(E)), ks)
+                     for _ in range(n_draw)])
+
+
 def mds(D, n_components=10, seed=0):
     """Embed the dissimilarity matrix in Euclidean space, minimising distortion.
 
