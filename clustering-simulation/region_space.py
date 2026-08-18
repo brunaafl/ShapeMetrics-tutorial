@@ -86,15 +86,11 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from netrep.metrics import LinearMetric
-from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from sklearn.metrics import silhouette_score
 
 REPO = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO / "Posani/clustering-analysis/single_area"))
-from utils.clustering_algo import clustering   # noqa: E402
-from utils.dr_algo import dr                   # noqa: E402
+sys.path.insert(0, str(REPO))
+import shapemetrics as sm                      # noqa: E402
 
 # ------------------------------------------------------- the simulated field
 N_REGIONS, N_NEURONS = 60, 100
@@ -174,33 +170,18 @@ def scenario(name, seed=0, n_regions=N_REGIONS):
 
 
 # --------------------------------------------------------------- neuron space
-def clustering_space(X):
-    Xs = (X - X.mean(1, keepdims=True)) / X.std(1, keepdims=True)
-    return dr(Xs, dict(method="pca", exp_var=0.9))
-
-
-def silhouette(X, n_init=NINIT):
-    return float(clustering(clustering_space(X), "kmeans", n_clus_lim=list(KLIM),
-                            dis_metric="euclidean", n_init=n_init)["sscores_mean"])
-
-
-def gaussian_null(X, rng):
-    """Gaussian with X's mean and empirical covariance, in raw curve space, pushed
-    through the identical pipeline so its nonlinearity hits data and null alike."""
-    w, V = np.linalg.eigh(np.cov(X - X.mean(0), rowvar=False))
-    return X.mean(0) + rng.standard_normal((len(X), len(w))) \
-        * np.sqrt(np.clip(w, 0, None)) @ V.T
-
-
 def categoricality(X, region, rng, n_draws=8):
     """Per-region z: is this region's own cloud lumpier than one continuous
-    cloud?  Each region against a Gaussian matched to itself.  The first column
-    of the figure."""
+    cloud?  Each region against a Gaussian matched to itself -- drawn in raw
+    curve space and pushed through the identical pipeline, so the pipeline's
+    nonlinearity hits data and null alike.  The first column of the figure."""
     out = []
     for r in np.unique(region):
         A = X[region == r]
-        obs = silhouette(A)
-        nl = np.array([silhouette(gaussian_null(A, rng)) for _ in range(n_draws)])
+        obs = sm.pipeline_silhouette(A, k_lim=KLIM, n_init=NINIT)
+        nl = np.array([sm.pipeline_silhouette(sm.curve_gaussian_null(A, rng),
+                                              k_lim=KLIM, n_init=NINIT)
+                       for _ in range(n_draws)])
         out.append((obs - nl.mean()) / (nl.std() + 1e-12))
     return np.array(out)
 
@@ -208,28 +189,13 @@ def categoricality(X, region, rng, n_draws=8):
 # --------------------------------------------------------------- region space
 def procrustes_distances(X, region, n_pcs=N_PCS):
     """Each region's whole population, compared with the shape metric."""
-    P = [PCA(n_pcs).fit_transform(X[region == r].T) for r in np.unique(region)]
-    S = len(P)
-    D = np.zeros((S, S))
-    for i in range(S):
-        for j in range(i + 1, S):
-            m = LinearMetric(alpha=1, center_columns=True, score_method="euclidean")
-            m.fit(P[i], P[j])
-            D[i, j] = D[j, i] = m.score(P[i], P[j])
-    return D
+    return sm.distance_matrix(X, region, n_pcs=n_pcs, alpha=1)
 
 
 def pca_embed(D, n_components=EMB_DIM):
-    """Classical MDS = PCA of the Procrustes distances between regions.
-
-    Deterministic, and its axes come out ordered by variance -- unlike sklearn's
-    SMACOF `MDS`, whose components are in arbitrary order.
-    """
-    n = len(D)
-    J = np.eye(n) - np.ones((n, n)) / n
-    w, V = np.linalg.eigh(-0.5 * J @ (D ** 2) @ J)
-    idx = np.argsort(w)[::-1][:n_components]
-    return V[:, idx] * np.sqrt(np.clip(w[idx], 0, None))
+    """Classical MDS: deterministic, and its axes come out ordered by variance --
+    which matters here, where PC1 is read as position along the continuum."""
+    return sm.classical_mds(D, n_components)
 
 
 def mean_embed(X, region, n_components=2):
@@ -247,9 +213,7 @@ def mean_embed(X, region, n_components=2):
 
 
 def best_silhouette(E):
-    return max(silhouette_score(E, KMeans(k, n_init=50, init="random",
-                                          random_state=42).fit_predict(E))
-               for k in range(2, KMAX_REGION + 1))
+    return sm.best_silhouette(E, range(2, KMAX_REGION + 1))
 
 
 def continuum_or_types(E, n_draws=200, seed=0):
@@ -261,10 +225,8 @@ def continuum_or_types(E, n_draws=200, seed=0):
     """
     rng = np.random.default_rng(seed)
     obs = best_silhouette(E)
-    w, V = np.linalg.eigh(np.cov(E - E.mean(0), rowvar=False))
-    nl = np.array([best_silhouette(
-        E.mean(0) + rng.standard_normal(E.shape)
-        * np.sqrt(np.clip(w, 0, None)) @ V.T) for _ in range(n_draws)])
+    nl = np.array([best_silhouette(sm.curve_gaussian_null(E, rng))
+                   for _ in range(n_draws)])
     return dict(obs=float(obs), null=nl,
                 z=float((obs - nl.mean()) / (nl.std() + 1e-12)),
                 p=float((np.sum(nl >= obs) + 1) / (n_draws + 1)))
