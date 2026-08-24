@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shapemetrics-paper"
+version = "0.1.0"
+description = "Shared analysis code for 'Neural population codes are structured across scales'"
+requires-python = ">=3.10"
+# Dependencies are deliberately NOT listed. The three conda environments in
+# envs/ are what resolve them, and they conflict on purpose: environment-allen
+# pins numpy<1.24 for allensdk, environment-ibl pulls ~70 packages for ibllib.
+# Install with:
+#     pip install -e refactored-code --no-deps
+# in each environment. --no-deps is not optional; without it pip re-resolves
+# numpy in the allen environment and breaks allensdk.
+
+[tool.setuptools.packages.find]
+where = ["Code"]
+
+[tool.setuptools.package-data]
+"shapemetrics.vendor.posani_utils" = ["*.py"]

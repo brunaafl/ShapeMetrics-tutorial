@@ -1,0 +1,46 @@
+# Separate environment for the IBL data-access steps ONLY.
+#
+#   conda env create -f environment-ibl.yml
+#   conda activate shapemetrics-ibl
+#   python Posani/brainwide-RRR-encoding-model/step1_IBL_downloaddata.py
+#   # ... or, in a notebook, ibl_analyses/scripts/loader.py
+#   conda activate shapemetrics      # switch back for everything downstream
+#
+# Why this is separate: `pip install ibllib` pulls in ~70 packages (PyQt5,
+# scikit-image, dask, pandera, boto3, numba, ...) and pins numpy back from
+# 2.4 to 2.3. None of that is needed once the data are on disk, and it is not
+# worth carrying in the environment that runs the actual analyses.
+#
+# ibllib supplies `one`, `brainbox` and `psychofit` -- do not install those
+# separately. `iblatlas` is a separate distribution and is listed explicitly.
+#
+# ibl_analyses/scripts/loader.py imports both the IBL API *and* the analysis
+# stack (ray, netrep, jax, and its sibling utils.py), so this environment
+# repeats those rather than being a thin API-only env.
+name: shapemetrics-ibl
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      # --- IBL data access: provides `one`, `brainbox`, `psychofit`
+      - ONE-api
+      - ibllib
+      - iblatlas
+
+      # --- what loader.py needs alongside it
+      - numpy
+      - scipy
+      - scikit-learn
+      - pandas
+      - matplotlib
+      - seaborn
+      - tqdm
+      - ray
+      - jax
+      - git+https://github.com/ahwillia/netrep@0186b8a77ec1ebaf541cc8f7173cb2556df8a8f0
+
+      # --- notebooks
+      - jupyterlab
+      - ipykernel

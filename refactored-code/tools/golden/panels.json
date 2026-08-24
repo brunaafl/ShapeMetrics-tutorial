@@ -1,0 +1,332 @@
+{
+ "Posani/figures/notebook/summary.pdf": {
+  "bytes": 45759,
+  "rendered": true,
+  "sha256": "db7e994d6247d3ba6adae92738c591ba1cf5e9c39d67722319a78a43ed5cf8d6"
+ },
+ "Posani/results/pair_decoding/pair_decoding.pdf": {
+  "bytes": 47403,
+  "rendered": true,
+  "sha256": "1e277e828d8046d676afeced9c1ededdc9dfca87db3d6d697726ae3b2b91cc84"
+ },
+ "Posani/results/region_clustering/region_clustering_panels.pdf": {
+  "bytes": 15957,
+  "rendered": true,
+  "sha256": "95156ccc4834b436ad56e0720141177573524c28032f2b0286f945f7c2ba144a"
+ },
+ "clustering-simulation/results/connectivity_covariate.pdf": {
+  "bytes": 43980,
+  "rendered": true,
+  "sha256": "2b589e7b385155ecf3ccf8aa5ae91581b3fffacd6dd019f1793eb83826884d68"
+ },
+ "clustering-simulation/results/dimensionality_grid.pdf": {
+  "bytes": 29884,
+  "rendered": true,
+  "sha256": "c29fd3eb0d32c6290ab038546716e21872b34120342063cf5a3e92637701d155"
+ },
+ "clustering-simulation/results/grid_decoding_heatmaps.pdf": {
+  "bytes": 26710,
+  "rendered": true,
+  "sha256": "a70361212a248ed7c0a8713a2a700297177e6a17ceea1e9fe460c163a45438cc"
+ },
+ "clustering-simulation/results/grid_heatmaps.pdf": {
+  "bytes": 10493,
+  "rendered": true,
+  "sha256": "e7fb6e29785b14aa5b26a52a8e8281f2f5a451b03edbfae1b422e5238696dd8f"
+ },
+ "clustering-simulation/results/grid_marginals.pdf": {
+  "bytes": 17912,
+  "rendered": true,
+  "sha256": "6f2014b4c11ee5de80396cc8e0137376b79a960a3e95f53fb84b315cb62845da"
+ },
+ "clustering-simulation/results/grid_neurons_150_vs_600.pdf": {
+  "bytes": 28862,
+  "rendered": true,
+  "sha256": "72cfeb4b222c3754f75bda04e2902c2f928faebeb48b8a403e7870a7007fa16c"
+ },
+ "clustering-simulation/results/grid_region_neurons.pdf": {
+  "bytes": 26671,
+  "rendered": true,
+  "sha256": "eabd3f2d0884cfd5c2b9142674bc2340d2ee82803a2e693f9b68bdc6a3278c4c"
+ },
+ "clustering-simulation/results/pooled_vs_region.pdf": {
+  "bytes": 11686,
+  "rendered": true,
+  "sha256": "9fd0bb491cf1d5123bf011d6338e252629fe8871bd774165bd10e746c0e5e38a"
+ },
+ "clustering-simulation/results/pooled_vs_theta.pdf": {
+  "bytes": 12174,
+  "rendered": true,
+  "sha256": "a52519ab47d851f923fae34a2ff5cb56d56415431050c6621ffc1604473adba2"
+ },
+ "clustering-simulation/results/psi_sweep.pdf": {
+  "bytes": 132054,
+  "rendered": true,
+  "sha256": "aafa9edb8896e5d2e7a8fb65b6118ad7fb13518c2c22c5423ecd44f6c64c15b0"
+ },
+ "clustering-simulation/results/region_decoding.pdf": {
+  "bytes": 49673,
+  "rendered": true,
+  "sha256": "1e95162ff9da286c28499d412c721b0e8fd70310c6a0b8b19f7b10b483546838"
+ },
+ "clustering-simulation/results/region_examples.pdf": {
+  "bytes": 22448,
+  "rendered": true,
+  "sha256": "aab5ba9416c9ac07ac3fe570518c8cf445e8592a05c02b0b8e8824adbada7e78"
+ },
+ "clustering-simulation/results/region_examples_pca.pdf": {
+  "bytes": 24717,
+  "rendered": true,
+  "sha256": "7074cfd04e30df135a1280a48ce93e63dc89bfa1118572f85b963a1a30f0d201"
+ },
+ "clustering-simulation/results/region_full.pdf": {
+  "bytes": 76123,
+  "rendered": true,
+  "sha256": "46f6421fad3668913a76c0290ba981261260553eaa11cae168e4167579097474"
+ },
+ "clustering-simulation/results/region_manifolds.pdf": {
+  "bytes": 128173,
+  "rendered": true,
+  "sha256": "7decf1d7f97e6528c0888f1368756fd7d574a6cf42df23d9680d1c623c38ba4d"
+ },
+ "clustering-simulation/results/region_neuron_level.pdf": {
+  "bytes": 23167,
+  "rendered": true,
+  "sha256": "6b444d44493a0184b7decc65f59c8279fd8f9e8766b64cb0d0e33a2ca5a2b533"
+ },
+ "clustering-simulation/results/region_shuffle.pdf": {
+  "bytes": 14865,
+  "rendered": true,
+  "sha256": "144c931fb24a5e5f55ef54dd269d2d128be77fb68721b2ccc84b49b4b772bdb8"
+ },
+ "clustering-simulation/results/region_space.pdf": {
+  "bytes": 30059,
+  "rendered": true,
+  "sha256": "dc8b7a7fd19e91c40d6224e91392b26e70364e81f43b984fbe6525c0b52a8cf5"
+ },
+ "clustering-simulation/results/region_summary_6x3.pdf": {
+  "bytes": 40390,
+  "rendered": true,
+  "sha256": "11e2abaa9b95e93e1018bcd748b2624bda77bcd861138a2c498a3c77bc3b4f3f"
+ },
+ "clustering-simulation/results/region_z_embedding.pdf": {
+  "bytes": 17052,
+  "rendered": true,
+  "sha256": "de3c25776231600cf5ad6dcebaa969f14c83edb35961a61ffe97769a680b520d"
+ },
+ "clustering-simulation/results/theta_full.pdf": {
+  "bytes": 49308,
+  "rendered": true,
+  "sha256": "e3bf0e8b6255f1da8b06bd2fce0d6c2101dbee3937cb0670b4cdd6ec78b2d3c2"
+ },
+ "clustering-simulation/results/theta_manifolds.pdf": {
+  "bytes": 256928,
+  "rendered": true,
+  "sha256": "bc42bd7466d12398a250c976df84155dcd30366400e89e6446acb3cb2c11d69c"
+ },
+ "clustering-simulation/results/theta_neuron_level.pdf": {
+  "bytes": 26419,
+  "rendered": true,
+  "sha256": "4c2fe8341d4513703c10b5dfe550d00eb867374a517d8e6ed398cf5f15aed15e"
+ },
+ "clustering-simulation/results/theta_regions.pdf": {
+  "bytes": 29711,
+  "rendered": true,
+  "sha256": "43e62f2c73ab006c5f7ca6c94ea8344192e909cb3291043de3bdd24d6a1bfde2"
+ },
+ "clustering-simulation/results/theta_z_embedding.pdf": {
+  "bytes": 17052,
+  "rendered": true,
+  "sha256": "a9a45ec9dee8cd1f473a1e0a9ca2ab1944d0fd7577ba80907e27926db8fc8566"
+ },
+ "duszkiewicz_analyses/results/3D_aligned_individual.pdf": {
+  "bytes": 1871571,
+  "rendered": true,
+  "sha256": "a37edba40cd130fcb5d31356b0b26c1e5a06f87636da3e140c88fa9c4d78ac3a"
+ },
+ "duszkiewicz_analyses/results/3D_not_aligned_individual.pdf": {
+  "bytes": 1872533,
+  "rendered": true,
+  "sha256": "52782b6755f91af1f70629f61a6425ce50fa713f30c54be08f7da44841640610"
+ },
+ "duszkiewicz_analyses/results/Fig_3_individualities.pdf": {
+  "bytes": 2382118,
+  "rendered": true,
+  "sha256": "f58a889220c4b9da5aa515df84d360a906423bd458b0cf35d125a2ee72582244"
+ },
+ "duszkiewicz_analyses/results/aligned_explained_variance.pdf": {
+  "bytes": 12887,
+  "rendered": true,
+  "sha256": "2b90fb6e7903c2ca3516aebb11ca68b3479ed4ec675b18c3df6e6f83cfa33b46"
+ },
+ "duszkiewicz_analyses/results/all_neurons.pdf": {
+  "bytes": 32726,
+  "rendered": true,
+  "sha256": "688a3f436cb4ee342f36968db632f014cdb16b60fc3d5ee14a146e1e81afce9a"
+ },
+ "duszkiewicz_analyses/results/angles_color.pdf": {
+  "bytes": 3207,
+  "rendered": true,
+  "sha256": "9c08c9a6538c4e59b2f5855b18bc99fcf70f98d905e2b28d6491f3129750da3d"
+ },
+ "duszkiewicz_analyses/results/animal_alignment_cross_validation.pdf": {
+  "bytes": 29392,
+  "rendered": true,
+  "sha256": "425559981ecde5292a65980c4ed64ae148f8ba76e8e55e91c0f301cb791156df"
+ },
+ "duszkiewicz_analyses/results/animal_decoding/animal_decoding.pdf": {
+  "bytes": 27281,
+  "rendered": true,
+  "sha256": "54b21df7a66d3eca3024857f6845790fa7ebea3197c0d7ec3b49c91aba954419"
+ },
+ "duszkiewicz_analyses/results/clustering/fig1_categorical.pdf": {
+  "bytes": 15473,
+  "rendered": true,
+  "sha256": "b624d55b5946caab60510d76005020feae611269c07d68e1e7d6583704f2ac07"
+ },
+ "duszkiewicz_analyses/results/clustering/fig2_within_vs_shuffled.pdf": {
+  "bytes": 16977,
+  "rendered": true,
+  "sha256": "f5d763ad1e5ef558ab5f2b57afbfb3a33c71a62980849a9b774eb55d47fd6ee2"
+ },
+ "duszkiewicz_analyses/results/clustering/hd_clustering_panels.pdf": {
+  "bytes": 53007,
+  "rendered": true,
+  "sha256": "394b247a2435d994f6c12e6480ddd6b893853105e2c88075bdb4ec8cb123f185"
+ },
+ "duszkiewicz_analyses/results/clustering/subject_gaussian_null.pdf": {
+  "bytes": 12575,
+  "rendered": true,
+  "sha256": "f7d61cb9d342a2137647024f06cb0e575e83e6cb3c4f43dc3155f2020ccffcbd"
+ },
+ "duszkiewicz_analyses/results/distances_all_folds.pdf": {
+  "bytes": 13694,
+  "rendered": true,
+  "sha256": "1a57a81cc42badff07fc7f769ef7e0128b0e69845296c6bd284ef953dbd2cccd"
+ },
+ "duszkiewicz_analyses/results/fig3.pdf": {
+  "bytes": 4307996,
+  "rendered": true,
+  "sha256": "6a7ad543d8270f3869c7ab07e2b348d4bb463f166e788bc5cca72a9d5e1de240"
+ },
+ "duszkiewicz_analyses/results/fig_3_canonical_ring.pdf": {
+  "bytes": 2483812,
+  "rendered": true,
+  "sha256": "9fd8f82628120015fbf80889787b9baefbcb20104830784fe6ea90d41c859298"
+ },
+ "duszkiewicz_analyses/results/fig_3_rotation_cue.pdf": {
+  "bytes": 671924,
+  "rendered": true,
+  "sha256": "fadc48b5cfcef39ccbfeb0c1275f2487eaecc0ed13825d6e93e83446bfc836b4"
+ },
+ "duszkiewicz_analyses/results/full_data_PCA.pdf": {
+  "bytes": 129874,
+  "rendered": true,
+  "sha256": "9b3f44f44071b9abaeec9978b797342e9bceded818ad43cf4681966e5c00e341"
+ },
+ "duszkiewicz_analyses/results/full_data_PCA_variance.pdf": {
+  "bytes": 11607,
+  "rendered": true,
+  "sha256": "b0275893bf4869a8f8d6c43022a88343f2182e90552a650267b6fabb1bbc398c"
+ },
+ "duszkiewicz_analyses/results/full_data_neurons.pdf": {
+  "bytes": 16534,
+  "rendered": true,
+  "sha256": "ad8a45817b37fdc1829d498b62ad3449d9167c436ef6086a028a8eac61a240a3"
+ },
+ "duszkiewicz_analyses/results/rotation_cue.pdf": {
+  "bytes": 261112,
+  "rendered": true,
+  "sha256": "bc441d99680f1b5057d5023fee88df8c3388c2f041b5fbca2f206babb18a61c1"
+ },
+ "new_IBL_analyses/figure_ibl/ASD_genotype_decoding.pdf": {
+  "bytes": 20352,
+  "rendered": true,
+  "sha256": "c8b68f1d4736c143e5cff843bc8d3c2550c02e802d547e73b469f4c6fa026004"
+ },
+ "new_IBL_analyses/figure_ibl/IBL_behaviour_space.pdf": {
+  "bytes": 28686,
+  "rendered": true,
+  "sha256": "b258e45c521c7ad9c7e0e7e0c1ca39b2b50ac94e0d19fdfb32c1811b1539f775"
+ },
+ "new_IBL_analyses/figure_ibl/IBL_clusters_behaviour.pdf": {
+  "bytes": 28808,
+  "rendered": true,
+  "sha256": "c401129fc560cbb1de11c40a4e57835b6da95be9fe86b1305a4fa25c168b4ee2"
+ },
+ "new_IBL_analyses/figure_ibl/IBL_combined_all.pdf": {
+  "bytes": 92548,
+  "rendered": true,
+  "sha256": "5bc7299d290863afd5885dc450cf07c88bab6d4a00855b8a1ad882e1c2d4fe52"
+ },
+ "new_IBL_analyses/results_asd/asd_subject_gaussian.pdf": {
+  "bytes": 17965,
+  "rendered": true,
+  "sha256": "53b47db4174d29a2ae3cdcf1fe0b93b49b671acca6fc45827f406808f781c2cf"
+ },
+ "new_IBL_analyses/results_bwm/bwm_subject_gaussian.pdf": {
+  "bytes": 18211,
+  "rendered": true,
+  "sha256": "cea9955ec912c441f89d81f81e8c41fb794ded3f5256b5d81d8ca92a6fe2dd57"
+ },
+ "schematic/equations/Dij.pdf": {
+  "bytes": 32866,
+  "rendered": true,
+  "sha256": "417615cbbb28c66bacee3407e58361dea45a152fa83b98a3b3b62ace2dfaf0c2"
+ },
+ "schematic/equations/Xi.pdf": {
+  "bytes": 16939,
+  "rendered": true,
+  "sha256": "c3e9e6cb574715bfaa2f28fc02a0af5f4ab6fb3b6a59e80858af98e31d27aa2d"
+ },
+ "schematic/equations/Xj.pdf": {
+  "bytes": 16943,
+  "rendered": true,
+  "sha256": "6ddebbfdf336bdba19331dc59d86ea5562e62cc26aac007a3855cdaf94056ab9"
+ },
+ "schematic/panel_D1.pdf": {
+  "bytes": 8295,
+  "rendered": true,
+  "sha256": "b2f62e75610f9a4caefba96cc4fed7870eda3777d8ccb785610595d05052ed94"
+ },
+ "schematic/panel_D2.pdf": {
+  "bytes": 8124,
+  "rendered": true,
+  "sha256": "4871783dd44f2b319c2c983b8dccac8e0511bc863dff8219123641b848ddaa63"
+ },
+ "schematic/panel_D3.pdf": {
+  "bytes": 4783,
+  "rendered": true,
+  "sha256": "fa8cf6c344775827b4e028f2cb2c047bbb4113629888cb89f1a2a6e8226496ed"
+ },
+ "schematic/panel_E1.pdf": {
+  "bytes": 4695,
+  "rendered": true,
+  "sha256": "e2df2f4ccbb7798c3490d0a7c6e97da2b4796a80aac0999e013ed70613bfc7af"
+ },
+ "schematic/panel_E2.pdf": {
+  "bytes": 4572,
+  "rendered": true,
+  "sha256": "62b93a09f32500d4a048a7bd62e2ce27f9cbaaa18d14a05d5e0d7f77b89acef9"
+ },
+ "schematic/panel_E3.pdf": {
+  "bytes": 7705,
+  "rendered": true,
+  "sha256": "7c436def75336bc6c2aa5b1720dad8318df990a9232aff5990dae38773e85184"
+ },
+ "siegel_analyses/results/figure_siegel.pdf": {
+  "bytes": 69753,
+  "rendered": true,
+  "sha256": "4f26c1f07ce30b561bf8a5a3b30d98f8dda586b7cfa08b6ab14cfaadc5475874"
+ },
+ "siegel_analyses/results/hierarchy_distance.pdf": {
+  "bytes": 22355,
+  "rendered": true,
+  "sha256": "dbc654fd9b0aa775fe06f9087ac607ef7b0f16241ff17ed17b9fb211f5e66057"
+ },
+ "siegel_analyses/results/siegel_region_clustering.pdf": {
+  "bytes": 23642,
+  "rendered": true,
+  "sha256": "6a19d9e30f7c8bbbe42ab4ccf87aac83e94b8d9604bef2882dc4eca7c367b670"
+ }
+}

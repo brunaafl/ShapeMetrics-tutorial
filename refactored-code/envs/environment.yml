@@ -1,0 +1,83 @@
+# Main conda environment for this repository.
+#
+#   conda env create -f environment.yml
+#   conda activate shapemetrics
+#
+# Runs every analysis in the repo EXCEPT:
+#
+#   * the two data-access APIs, which pin incompatible versions and each get
+#     their own environment -- see environment-ibl.yml and environment-allen.yml;
+#   * gam_refit/, a vendored upstream clone (github.com/BalzaniEdoardo/PGAM)
+#     that needs R + rpy2 + the R `survey` package and an OpenMP-capable
+#     compiler; it carries its own instructions in gam_refit/README.md.
+#
+# Python is pinned to 3.11 on purpose: several notebooks still `import imp`,
+# which was removed from the standard library in Python 3.12.
+#
+# Everything below is installed with pip on top of a bare conda python. That is
+# not a stylistic choice: conda's numba/statsmodels builds pull numpy back to
+# 1.26 and pandas to 2.3, which silently downgrades the whole stack. The pip
+# wheels resolve cleanly against numpy 2.4 / pandas 3.0.
+name: shapemetrics
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      # --- core scientific stack
+      - numpy
+      - scipy
+      - scikit-learn
+      - pandas
+      - matplotlib
+      - seaborn
+      - statsmodels          # CanCorr, siegel_analyses/scripts/netrep_helpers.py
+      - joblib
+      - tqdm
+      - pyyaml
+
+      # --- data formats
+      - h5py
+      - xarray               # fmri/notebooks/bold_analyse.ipynb
+      - netCDF4              #   ... reads fmri/data/subject=*.nc
+      - h5netcdf
+      - openpyxl             # supplementary xlsx tables
+      - ijson                # streams the 1.3 GB RRR_selectivity.json
+      - pypdf                # inspecting PDF figures (page size, embedded fonts)
+
+      # --- notebooks
+      - jupyterlab
+      - ipykernel
+      - ipywidgets
+
+      # --- parallelism used by ibl_analyses/scripts/utils.py
+      - ray
+
+      # --- autodiff (ibl notebooks)
+      - jax
+
+      # --- shape metrics themselves, pinned to the commit used by the paper
+      - git+https://github.com/ahwillia/netrep@0186b8a77ec1ebaf541cc8f7173cb2556df8a8f0
+
+      # --- statistics and modelling helpers
+      - mord                 # LogisticAT, ordinal regression (Siegel analyses)
+      - scikits.bootstrap    # bt.ci in the head-direction notebooks
+      - ripser               # persistent homology (duszkiewicz figure_warmup)
+      - brokenaxes           # figure helper (duszkiewicz canonical_circuit)
+      - decodanda            # Posani/Separability/source/
+
+# mvlearn is NOT listed here. It supplies GCCA
+# (duszkiewicz inhibitory_analyses.ipynb) and must be installed separately,
+# after the environment exists:
+#
+#     conda activate shapemetrics
+#     pip install --no-deps mvlearn
+#
+# --no-deps is REQUIRED: mvlearn caps matplotlib at <=3.3.4, a version with no
+# current wheel, so a normal install makes pip compile matplotlib from source
+# and it fails on the bundled freetype. The cap is stale -- GCCA does not touch
+# matplotlib, and it is verified working against matplotlib 3.11 in
+# README_ENV.md. A bare `--no-deps` line inside this file does not work: conda
+# hands it to pip as if it were a requirement, and the whole env creation
+# fails with "Invalid requirement: --no-deps".
