@@ -77,6 +77,23 @@ def rewrite_header(src: str, figure: str) -> tuple[str, bool]:
             src = re.sub(pat, f'{alias} = paths.figure_code("{figure}").{m}',
                          src, flags=re.M)
 
+    # Any remaining REPO/HERE reference is dangling -- the definition was removed
+    # above. These are the shapes they took.
+
+    # 1. an output directory anywhere under the old tree -> the figure's results/
+    src = re.sub(r'^(\s*)(\w+) = (?:REPO|HERE) / "[^"]*"$',
+                 rf'\1\2 = paths.set_figure("{figure}")', src, flags=re.M)
+
+    # 2. raw session globs -> the external tier, named by source paper
+    src = re.sub(r'str\((?:REPO|HERE) / "duszkiewicz_analyses/(Dataset_\d)/\*"\)',
+                 r'str(paths.external("duszkiewicz2024", "\1") / "*")', src)
+
+    # 3. data files reached by folder -> the tracked tier
+    src = re.sub(r'(?:REPO|HERE) / "data_bwm" / "([\w.]+)"',
+                 r'paths.derived("iblreproducibility", "\1")', src)
+    src = re.sub(r'(?:REPO|HERE) / "data_asd" / "([\w.]+)"',
+                 r'paths.derived("noel2025", "\1")', src)
+
     # data directories -> Data/derived/<paper>/, so a notebook stops depending on
     # the working directory and on data living beside it
     DATA_DIRS = {
