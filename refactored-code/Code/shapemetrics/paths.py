@@ -142,6 +142,40 @@ def results(*parts: str) -> Path:
     return p
 
 
+def figure_code(figure: str | None = None):
+    """Import a figure's local `code/` package, safely.
+
+    `code` is a standard-library module name. A notebook doing
+    `from code import region_space` gets our package only when the working
+    directory happens to be the figure folder, and the *stdlib* `code` module
+    otherwise -- silently, with a confusing AttributeError rather than an
+    ImportError. Since the folder name is part of the agreed layout, load it by
+    path under a unique name instead:
+
+        sim = paths.figure_code()          # after set_figure(...)
+        X, region, colour = sim.region_space.scenario("kinds")
+    """
+    import importlib.util
+    import sys as _sys
+
+    figure = figure or _FIGURE
+    if figure is None:
+        raise RuntimeError("pass a figure name, or call set_figure() first")
+    init = ROOT / figure / "code" / "__init__.py"
+    if not init.exists():
+        raise FileNotFoundError(f"{figure} has no code/ package: {init}")
+
+    name = f"_{figure.lower()}_code"
+    if name in _sys.modules:
+        return _sys.modules[name]
+    spec = importlib.util.spec_from_file_location(
+        name, init, submodule_search_locations=[str(init.parent)])
+    module = importlib.util.module_from_spec(spec)
+    _sys.modules[name] = module            # before exec, so relative imports work
+    spec.loader.exec_module(module)
+    return module
+
+
 def require_env(name: str) -> None:
     """Fail fast, and usefully, when a script is run in the wrong conda env.
 

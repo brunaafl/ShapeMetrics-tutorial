@@ -31,7 +31,9 @@ def distance_matrix(X, labels, n_pcs=20, alpha=1.0):
     `features x neurons` and reduced to `n_pcs` components, so every group ends
     up in the same `features x n_pcs` shape whatever its neuron count.
     """
-    pca = PCA(n_components=n_pcs)
+    # explicit solver: "auto" switches to the stochastic randomized SVD for
+    # some shapes, which made distances depend on the global RNG state
+    pca = PCA(n_components=n_pcs, svd_solver="full")
     P = [pca.fit_transform(X[labels == g].T) for g in np.unique(labels)]
     n = len(P)
     D = np.zeros((n, n))
