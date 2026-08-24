@@ -29,7 +29,8 @@ ROOT = Path(__file__).resolve().parent.parent
 
 # module name -> attribute on the figure's code package
 SIM_MODULES = ("region_space", "theta_space", "grid_space", "simulation",
-               "panels", "hd_panels", "bwm_panels", "siegel_panels", "ibl_panels")
+               "panels", "hd_panels", "bwm_panels", "siegel_panels", "ibl_panels",
+               "netrep_helpers", "siegel_setup", "data", "analyses")
 
 
 def rewrite_header(src: str, figure: str) -> tuple[str, bool]:
@@ -49,6 +50,9 @@ def rewrite_header(src: str, figure: str) -> tuple[str, bool]:
         if st.startswith("sys.path.insert(") or st.startswith("REPO = Path("):
             continue
         if st.startswith("HERE = "):          # any other HERE assignment
+            continue
+        # `_REPO = Path.cwd().parent` etc: existed only to build sys.path entries
+        if re.match(r"_?REPO\s*=\s*Path\.cwd\(\)", st):
             continue
         out.append(ln)
     src = "".join(out)
@@ -72,6 +76,34 @@ def rewrite_header(src: str, figure: str) -> tuple[str, bool]:
             alias = mt.group(1) or m
             src = re.sub(pat, f'{alias} = paths.figure_code("{figure}").{m}',
                          src, flags=re.M)
+
+    # data directories -> Data/derived/<paper>/, so a notebook stops depending on
+    # the working directory and on data living beside it
+    DATA_DIRS = {
+        "data_fig":  ('paths.derived("iblreproducibility", "data_fig")', "Figure4"),
+        "data_bwm":  ('paths.derived("iblreproducibility")', "Figure4"),
+        "data_asd":  ('paths.derived("noel2025")', "Figure4"),
+    }
+    for folder, (expr, fig) in DATA_DIRS.items():
+        if figure != fig:
+            continue
+        src = re.sub(rf'^(\s*)(\w+) = Path\.cwd\(\) / "{folder}"$',
+                     rf'\1\2 = {expr}', src, flags=re.M)
+        # bare relative loads, e.g. np.load("data_bwm/bwm_tuning.npz")
+        src = re.sub(rf'"{folder}/([\w.]+)"',
+                     rf'paths.derived("{"iblreproducibility" if folder != "data_asd" else "noel2025"}", "\1")',
+                     src)
+
+    # results_* folders written relative to cwd -> the figure's results/
+    src = re.sub(r'^(\s*)(\w+) = Path\.cwd\(\) / "(results_\w+)"$',
+                 rf'\1\2 = paths.results("\3")', src, flags=re.M)
+    src = re.sub(r'Path\("(results_\w+)"\)', r'paths.results("\1")', src)
+
+    # the house style used to be reached via sys.path into Posani/code
+    src = re.sub(r"^(\s*)import plotting(\s*#.*)?$",
+                 r"\1from shapemetrics import plotting", src, flags=re.M)
+    src = re.sub(r"^(\s*)import (shape|decoding|procrustes) as (\w+)(\s*#.*)?$",
+                 r"\1import shapemetrics as \3", src, flags=re.M)
 
     if "from shapemetrics import paths" not in src:
         src = re.sub(r"^(import numpy as np)$",

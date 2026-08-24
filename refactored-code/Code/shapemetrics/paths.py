@@ -64,22 +64,33 @@ class MissingDataset(FileNotFoundError):
     """Raised with enough context to act on, rather than a bare path."""
 
 
+def _resolve(value: str) -> Path:
+    """Expand ~ and anchor a relative root at refactored-code/, not the cwd.
+
+    Relative entries are natural to write ("../Posani") but would otherwise
+    resolve against wherever the notebook was launched -- so the same config
+    would find the data from one directory and not from another.
+    """
+    p = Path(value).expanduser()
+    return p if p.is_absolute() else (ROOT / p).resolve()
+
+
 def _roots() -> dict[str, Path]:
     """Per-dataset roots from data_roots.toml, plus its `default`."""
     cfg = ROOT / "data_roots.toml"
     if not cfg.exists() or tomllib is None:
         return {}
     conf = tomllib.loads(cfg.read_text())
-    out = {k: Path(v).expanduser() for k, v in conf.get("roots", {}).items()}
+    out = {k: _resolve(v) for k, v in conf.get("roots", {}).items()}
     if "default" in conf:
-        out["__default__"] = Path(conf["default"]).expanduser()
+        out["__default__"] = _resolve(conf["default"])
     return out
 
 
 def external_root(dataset: str) -> Path:
     """The directory holding `dataset`'s raw and large-derived files."""
     if env := os.environ.get("SHAPEMETRICS_DATA"):
-        return Path(env).expanduser() / dataset
+        return Path(env).expanduser().resolve() / dataset
     roots = _roots()
     if dataset in roots:
         return roots[dataset]
