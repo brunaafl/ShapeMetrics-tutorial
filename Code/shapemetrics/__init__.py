@@ -12,7 +12,7 @@ Every notebook that used to carry its own copy of `silhouette_sweep`,
 Defaults are the values those copies used, so results and figures are unchanged.
 """
 from . import (cache, clustering, decoding, embedding, metrics,   # noqa: F401
-               paths, plotting, shape)
+               paths, shape)
 from .cache import cached_npz                                        # noqa: F401
 from .paths import (MissingDataset, derived, external,               # noqa: F401
                     require_env, results, set_figure)
@@ -25,13 +25,33 @@ from .clustering import (best_silhouette, best_silhouette_and_k,     # noqa: F40
                          silhouette_sweep)
 from .embedding import classical_mds, mds                            # noqa: F401
 from .metrics import dsd, ssd                                        # noqa: F401
-# Two house styles now live in one module, deliberately not merged: the paper's
-# richer vocabulary (typeset/distmat/null_hist/...) and the earlier thin one used
-# by the head-direction and IBL figures. They disagree on colour -- NULLC is a
-# blue, NULL_GREY is "0.75" -- so the thin names are exported under their own
-# spelling rather than silently taking over. A figure keeps what it was drawn with.
-from .plotting import (DATA_RED, KIND_COLORS, NULLC, NULL_GREY,   # noqa: F401
-                       PANEL, axis_style, module_palette, null_hist,
-                       save, save_stem, simple_null_panel, typeset)
+# plotting is NOT imported here, deliberately.
+#
+# It applies the paper's rcParams at module scope (pdf.fonttype 42 so Affinity
+# gets editable text, svg.fonttype "none"), which is right for the figures drawn
+# with it -- but as an eager import it fired on `import shapemetrics` and
+# restyled every PDF written afterwards. Figure 1's panel silently changed:
+# 40,390 -> 43,471 bytes, 20,227 pixels, from a library import it never asked for.
+#
+# Accessed lazily instead, so `import shapemetrics` has no global side effect
+# while `from shapemetrics import plotting` still applies the house style.
+_PLOTTING_NAMES = {
+    "plotting", "DATA_RED", "KIND_COLORS", "NULLC", "NULL_GREY", "PANEL",
+    "axis_style", "module_palette", "null_hist", "save", "save_stem",
+    "simple_null_panel", "typeset",
+}
+
+
+def __getattr__(name):                      # PEP 562
+    if name in _PLOTTING_NAMES:
+        # import_module, not `from . import plotting`: the latter goes through
+        # getattr on this package and so re-enters __getattr__, recursing forever
+        import importlib
+        _p = importlib.import_module(".plotting", __name__)
+        globals()["plotting"] = _p          # resolve directly from here on
+        return _p if name == "plotting" else getattr(_p, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
 from .shape import (distance_matrix, pair_distance, pairwise,        # noqa: F401
                     preprocess, procrustes_distance)

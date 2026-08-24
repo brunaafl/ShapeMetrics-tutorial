@@ -130,7 +130,24 @@ def check_panels(new_dirs: dict[str, Path]) -> tuple[int, int, list[str]]:
     return ok, bad, msgs
 
 
+def _check_package() -> None:
+    """Fail loudly if a stale shapemetrics/ shadows the installed package.
+
+    The pre-refactor tree is still on disk (untracked, holding the raw data), and
+    its shapemetrics/ directory shadows the installed one for anything run from
+    the repository root -- silently, giving the OLD library. That produced a
+    wrong diagnosis once already.
+    """
+    import shapemetrics as sm
+    if not hasattr(sm, "paths"):
+        raise SystemExit(
+            f"wrong shapemetrics on the path: {sm.__file__}\n"
+            f"  That is the pre-refactor package. Run from outside the repository\n"
+            f"  root, or remove/rename the stale shapemetrics/ directory.")
+
+
 def main() -> int:
+    _check_package()
     ap = argparse.ArgumentParser()
     ap.add_argument("--figure", default=None)
     a = ap.parse_args()
