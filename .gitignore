@@ -4,9 +4,12 @@ data_roots.toml
 # raw and large-derived data: never in git (see Data/README.md)
 Data/external/
 
-# figure caches are derived; the panel images are not
-Figure*/results/*.npz
-Figure*/results/*.npy
+# Figure caches are derived, but small (a few MB in total) and they are INPUTS
+# to the figure notebooks: excluding them meant a fresh clone silently produced a
+# degraded panel (36,203 bytes instead of 40,390) rather than failing. Tracked, so
+# a clone reproduces the figures without a 20-minute grid sweep first. Anything
+# genuinely large belongs in Data/, not here.
+Figure*/results/*.pkl
 
 *.egg-info/
 tools/.verify_tmp/
