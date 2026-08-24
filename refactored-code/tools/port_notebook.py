@@ -99,6 +99,25 @@ def rewrite_header(src: str, figure: str) -> tuple[str, bool]:
                  rf'\1\2 = paths.results("\3")', src, flags=re.M)
     src = re.sub(r'Path\("(results_\w+)"\)', r'paths.results("\1")', src)
 
+    # `import data, shape, plotting` -- the combined form. Each name is either the
+    # shared style module or one of the figure's own, and they resolve to
+    # different places, so the statement has to be split rather than rewritten.
+    def _split(m):
+        indent = m.group(1)
+        names = [n.strip() for n in m.group(2).split(",")]
+        local = [n for n in names if n != "plotting"]
+        out = []
+        if "plotting" in names:
+            out.append(f"{indent}from shapemetrics import plotting")
+        if local:
+            out.append(f'{indent}_c = paths.figure_code("{figure}")')
+            out.append(indent + ", ".join(local) + " = "
+                       + ", ".join(f"_c.{n}" for n in local))
+        return "\n".join(out)
+
+    src = re.sub(r"^(\s*)import ((?:\w+\s*,\s*)+\w+)(?:\s*#.*)?$",
+                 _split, src, flags=re.M)
+
     # the house style used to be reached via sys.path into Posani/code
     src = re.sub(r"^(\s*)import plotting(\s*#.*)?$",
                  r"\1from shapemetrics import plotting", src, flags=re.M)
