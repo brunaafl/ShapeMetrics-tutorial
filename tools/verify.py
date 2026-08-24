@@ -31,6 +31,51 @@ TOL = 1e-10          # arrays: absolute, on mean and std
 PIXELS = 0           # panels: differing pixels allowed
 
 
+def _match(name_path, golden_keys):
+    """Pick the golden entry for a produced file, by longest shared path suffix.
+
+    Matching on basename alone is not safe: three different files are called
+    region_categoricality.npz (Posani's and two of Siegel's). A dict keyed by
+    basename keeps whichever came last, so the verifier silently compared
+    Posani's result against Siegel's baseline and reported a 1.6 std "drift"
+    that was really two unrelated analyses. It could as easily have hidden a
+    real difference.
+
+    Returns None when the choice is ambiguous, so an unverifiable file is
+    reported as such rather than compared against the wrong baseline.
+    """
+    parts = list(Path(name_path).parts)
+    cands = [k for k in golden_keys if Path(k).name == parts[-1]]
+    if len(cands) <= 1:
+        return cands[0] if cands else None
+
+    def shared(k):
+        a, b = list(Path(k).parts)[::-1], parts[::-1]
+        n = 0
+        for x, y in zip(a, b):
+            if x != y:
+                break
+            n += 1
+        return n
+
+    scored = sorted(((shared(k), k) for k in cands), reverse=True)
+    if len(scored) > 1 and scored[0][0] == scored[1][0]:
+        return None                      # genuinely ambiguous
+    return scored[0][1]
+
+
+def _known() -> dict:
+    """Accepted, explained differences. Reported, never silenced."""
+    f = HERE / "known_differences.toml"
+    if not f.exists():
+        return {}
+    try:
+        import tomllib
+    except ModuleNotFoundError:
+        return {}
+    return tomllib.loads(f.read_text())
+
+
 def _load_png(p: Path):
     try:
         import fitz                                     # noqa: F401
@@ -56,14 +101,16 @@ def render(pdf: Path, out: Path, dpi: int = 150) -> bool:
 def check_caches(new_dirs: dict[str, Path]) -> tuple[int, int, list[str]]:
     """Compare every npz we can pair with a golden entry."""
     golden = json.loads((GOLDEN / "caches.json").read_text())
-    by_name = {Path(k).name: v for k, v in golden.items()}
     ok = bad = 0
     msgs = []
     for figure, d in new_dirs.items():
         for npz in sorted(d.rglob("*.npz")):
-            ref = by_name.get(npz.name)
-            if ref is None:
+            key = _match(npz.relative_to(d), golden)
+            if key is None:
+                if any(Path(k).name == npz.name for k in golden):
+                    msgs.append(f"  {figure}/{npz.name}: ambiguous baseline, not compared")
                 continue                       # new cache, nothing to compare
+            ref = golden[key]
             try:
                 with np.load(npz, allow_pickle=True) as z:
                     for k, want in ref["arrays"].items():
@@ -77,10 +124,20 @@ def check_caches(new_dirs: dict[str, Path]) -> tuple[int, int, list[str]]:
                             continue
                         dm = abs(float(np.mean(fin)) - want["mean"])
                         ds = abs(float(np.std(fin)) - want["std"])
-                        if dm > TOL or ds > TOL:
+                        known = _known().get(npz.name)
+                        tol = TOL
+                        if (known and known.get("figure") == figure
+                                and known.get("array", k) == k):
+                            tol = float(known.get("tolerance", TOL))
+                        if dm > tol or ds > tol:
                             bad += 1
                             msgs.append(f"  {figure}/{npz.name}[{k}]: "
                                         f"mean drift {dm:.3e}, std drift {ds:.3e}")
+                        elif tol != TOL:
+                            ok += 1
+                            msgs.append(f"  {figure}/{npz.name}[{k}]: drift "
+                                        f"{max(dm, ds):.1e} within the documented "
+                                        f"tolerance -- KNOWN")
                         else:
                             ok += 1
             except Exception as exc:
@@ -122,9 +179,15 @@ def check_panels(new_dirs: dict[str, Path]) -> tuple[int, int, list[str]]:
                 continue
             diff = int((np.abs(a - b).max(axis=2) > 0).sum())
             if diff > PIXELS:
-                bad += 1
-                msgs.append(f"  {figure}/{pdf.name}: {diff:,} px differ "
-                            f"(max {int(np.abs(a - b).max())}/255)")
+                known = _known().get(pdf.name)
+                if known and known.get("figure") == figure:
+                    msgs.append(f"  {figure}/{pdf.name}: {diff:,} px differ -- "
+                                f"KNOWN, see tools/known_differences.toml")
+                    ok += 1
+                else:
+                    bad += 1
+                    msgs.append(f"  {figure}/{pdf.name}: {diff:,} px differ "
+                                f"(max {int(np.abs(a - b).max())}/255)")
             else:
                 ok += 1
     return ok, bad, msgs

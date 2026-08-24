@@ -61,10 +61,6 @@ def rewrite_header(src: str, figure: str) -> tuple[str, bool]:
     src = re.sub(r'OUT = (?:HERE|Path\.cwd\(\)) / "results"\n'
                  r'(?:OUT\.mkdir\([^\n]*\)\n)?',
                  f'OUT = paths.set_figure("{figure}")\n', src)
-    if "paths.set_figure" not in src:
-        src = re.sub(r"^(from shapemetrics import paths)$",
-                     f'\\1\n\nOUT = paths.set_figure("{figure}")',
-                     src, count=1, flags=re.M)
 
     # sibling simulation modules -> the figure's code package.
     # trailing "# noqa" comments are common, so match the statement not the line.
@@ -144,6 +140,20 @@ def rewrite_header(src: str, figure: str) -> tuple[str, bool]:
     if "from shapemetrics import paths" not in src:
         src = re.sub(r"^(import numpy as np)$",
                      "from shapemetrics import paths\n\\1", src, count=1, flags=re.M)
+
+    # relative writes: Path("results/figure2"), Path("results") ...
+    # These only worked because nbconvert sets the cwd to the notebook's folder;
+    # from Jupyter launched elsewhere they scatter output into the wrong tree.
+    src = re.sub(r'Path\("results/([\w./-]+)"\)', r'paths.results("\1")', src)
+    src = re.sub(r'Path\("results"\)', r'paths.results()', src)
+
+    # Every notebook must scope its results, not only those that had an OUT line.
+    # plotting.save() defaults into paths.results(), which refuses to guess -- so a
+    # notebook that writes only through save() fails at the last cell without this.
+    # Runs here, after the paths import exists to anchor on.
+    if "paths.set_figure" not in src and "from shapemetrics import paths" in src:
+        src = re.sub(r"^(from shapemetrics import paths)$",
+                     f'\\1\n\npaths.set_figure("{figure}")', src, count=1, flags=re.M)
 
     # `import sys` is usually dead once the path juggling is gone
     if not re.search(r"\bsys\.", src.replace("import sys", "")):

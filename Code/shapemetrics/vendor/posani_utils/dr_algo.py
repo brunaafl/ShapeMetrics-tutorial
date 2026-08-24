@@ -13,14 +13,15 @@ def dr(data, dr_kwargs):
                              perplexity=pp).fit_transform(data)
         elif dr_kwargs['method'] == 'pca':
             if ("ncomp" not in dr_kwargs) and ("exp_var" in dr_kwargs):
-                pca = PCA().fit(data)
+                pca = PCA(svd_solver="full").fit(data)   # see vendor/README.md
                 ncomp = np.where(np.cumsum(pca.explained_variance_ratio_)>dr_kwargs['exp_var'])[0][0]+1
                 ncomp = np.clip(ncomp, 2, None)
             elif ("ncomp" in dr_kwargs):
                 ncomp = dr_kwargs['ncomp']
             else:
                 assert False
-            data_lowd = PCA(n_components=ncomp).fit_transform(data)
+            data_lowd = PCA(n_components=ncomp,
+                            svd_solver="full").fit_transform(data)
         elif dr_kwargs['method'] == 'mds':
             embedding = MDS(n_components=dr_kwargs['ncomp'], metric=False, random_state=seed)
             data_lowd = embedding.fit_transform(data)

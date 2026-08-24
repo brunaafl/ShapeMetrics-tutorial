@@ -145,8 +145,28 @@ def save(fig, name, folder=None, crop=True, formats=("svg", "pdf", "png")):
     return f"{folder}/{name}.pdf"
 
 
+def ensure_palette(data=None):
+    """Fill PALETTE on first use, from the dataset's own canonical module order.
+
+    PALETTE used to be `dict(zip(D_.MODULES, tab10.colors))` evaluated when the
+    module was imported, which forced the shared style module to import a
+    dataset. It is filled on demand instead -- but the ORDER matters, because the
+    colour a module gets is its position in that zip. So the order is taken from
+    the dataset's MODULES rather than from whatever regions happen to be present,
+    which would reshuffle the colours whenever the region set changed.
+    """
+    import sys as _sys
+    mods = getattr(data, "MODULES", None)
+    if mods is None:
+        mods = getattr(_sys.modules.get(type(data).__module__, None), "MODULES", None)
+    if mods is not None:
+        module_palette(list(mods))
+    return PALETTE
+
+
 def colors(data):
-    return np.array([PALETTE[m] for m in data.modules()])
+    ensure_palette(data)
+    return np.array([PALETTE.get(m, PALETTE["other"]) for m in data.modules()])
 
 
 def fit_line(ax, x, y, color="0.25", lw=1.2, alpha=.9):
@@ -539,13 +559,15 @@ def mds(xy, var, data, ax=None, by="module", size=MARKER_SIZE, fontsize=None,
         label=True, axis_key=True, cbar=True, cbar_kw=None, square=True,
         rotate=None):
     """Scatter of the embedded regions, coloured by module or by hierarchy."""
+    ensure_palette(data)
     fontsize = FS_ANNOT - 3 if fontsize is None else fontsize
     ax = ax or plt.subplots(figsize=figsize())[1]
     x, y = xy.T
     if by == "module":
         for m in dict.fromkeys(data.modules()):
             s = data.modules() == m
-            points(ax, x[s], y[s], color=PALETTE[m], size=size, label=m)
+            points(ax, x[s], y[s], color=PALETTE.get(m, PALETTE["other"]),
+                   size=size, label=m)
         ax.legend(fontsize=FS_ANNOT, frameon=False, handlelength=0.9,
                   labelspacing=0.25)
     else:

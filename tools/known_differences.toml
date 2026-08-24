@@ -1,0 +1,39 @@
+# Differences from the pre-refactor baseline that are understood and accepted.
+#
+# Everything else that differs is a bug. Entries here are NOT silenced: verify.py
+# still prints them, it just does not fail on them. Each needs a reason a reader
+# can check.
+
+["hd_clustering_panels.pdf"]
+figure  = "Figure3"
+pixels  = 71
+reason  = """A single character in one label: "p = 0.01" became "p < 0.01".
+
+The permutation p-value sits on its own resolution floor -- with N draws the
+smallest attainable value is 1/(N+1) -- so the label flips between "=" and "<"
+on an arbitrarily small change in the null. The null used to move between runs,
+because the vendored Posani dimensionality reduction called PCA() with no
+random_state and sklearn chose the randomized solver (see
+Code/shapemetrics/vendor/README.md). Now that it is pinned to svd_solver="full"
+the value is deterministic, and it lands just below the floor rather than on it.
+
+The statistic is unchanged. What changed is that it stopped moving."""
+
+["region_categoricality.npz"]
+figure    = "Figure2"
+array     = "z"
+tolerance = 1e-2
+reason    = """The baseline is one draw from a statistic that used to be random.
+
+The golden file was computed before the vendored PCA solver was pinned, when
+repeating the identical computation in a second process gave different answers:
+
+    region 0    5.2057314727   vs   5.2050811612
+    region 1   -0.1459566106   vs   -0.1427143441
+
+so there is no value the new code could reproduce exactly. The new one is stable
+to 1e-12 across processes; the residual gap to the baseline is that old noise.
+
+Region 1's z sits near zero, where z = (obs - mean)/std is ill-conditioned and a
+small change in the null moves it disproportionately -- which is why the
+tolerance is loose. Re-baseline once Figure 2 has been re-run and inspected."""
