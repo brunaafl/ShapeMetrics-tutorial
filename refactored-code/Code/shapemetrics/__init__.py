@@ -25,6 +25,13 @@ from .clustering import (best_silhouette, best_silhouette_and_k,     # noqa: F40
                          silhouette_sweep)
 from .embedding import classical_mds, mds                            # noqa: F401
 from .metrics import dsd, ssd                                        # noqa: F401
-from .plotting import DATAC, NULLC, PANEL, null_panel, save, style   # noqa: F401
+# Two house styles now live in one module, deliberately not merged: the paper's
+# richer vocabulary (typeset/distmat/null_hist/...) and the earlier thin one used
+# by the head-direction and IBL figures. They disagree on colour -- NULLC is a
+# blue, NULL_GREY is "0.75" -- so the thin names are exported under their own
+# spelling rather than silently taking over. A figure keeps what it was drawn with.
+from .plotting import (DATA_RED, KIND_COLORS, NULLC, NULL_GREY,   # noqa: F401
+                       PANEL, axis_style, module_palette, null_hist,
+                       save, save_stem, simple_null_panel, typeset)
 from .shape import (distance_matrix, pair_distance, pairwise,        # noqa: F401
                     preprocess, procrustes_distance)
