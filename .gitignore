@@ -1,0 +1,41 @@
+# machine-local data roots
+data_roots.toml
+
+# raw and large-derived data: never in git (see Data/README.md)
+Data/external/
+
+# figure caches are derived; the panel images are not
+Figure*/results/*.npz
+Figure*/results/*.npy
+
+*.egg-info/
+tools/.verify_tmp/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+
+# ---------------------------------------------------------------------------
+# The pre-refactor tree. Untracked on this branch, not deleted: it still holds
+# the 67 GB of raw data that data_roots.toml points at, and it remains fully
+# available on `main`. Delete from disk only after the four figures have been
+# re-run from Data/ alone.
+Posani/
+allen-brain/
+claude_archive/
+clustering-simulation/
+duszkiewicz_analyses/
+fmri/
+ibl_analyses/
+latex_paper/
+metric-comparison/
+new_IBL_analyses/
+noise-simple-ring/
+schematic/
+shapemetrics/
+siegel_analyses/
+simple-ring/
+figures/
+environment.yml
+environment-ibl.yml
+environment-allen.yml
