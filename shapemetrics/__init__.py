@@ -11,8 +11,11 @@ Every notebook that used to carry its own copy of `silhouette_sweep`,
 `gaussian_null`, `subject_distances`, `embed`, `run` and `style` now calls these.
 Defaults are the values those copies used, so results and figures are unchanged.
 """
-from . import cache, clustering, embedding, metrics, plotting, shape  # noqa: F401
+from . import (cache, clustering, decoding, embedding, metrics,   # noqa: F401
+               plotting, shape)
 from .cache import cached_npz                                        # noqa: F401
+from .decoding import (decodability, decoding_matrix,                # noqa: F401
+                       pair_accuracy)
 from .clustering import (best_silhouette, best_silhouette_and_k,     # noqa: F401
                          capped_silhouette, clustering_space, condition_space_test,
                          curve_gaussian_null,

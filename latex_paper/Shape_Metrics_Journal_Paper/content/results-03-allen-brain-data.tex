@@ -1,0 +1,67 @@
+\subsection{Population geometry varies along a continuous hierarchy across regions}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{content/figures/netrep-journal-figure-4.pdf}
+    \caption{\textbf{Across region geometry recovers the anatomical hierarchy without clustering it, in mice and monkeys.}
+    \textbf{a.} IBL dataset \parencite{angelaki2025brain}. \textit{Top}, task; \textit{bottom}, Neuropixels coverage. $K = 22$ cortical areas (total of $n = 4617$ units; \cite{posani2026}, \textit{\nameref{sec:methods}}).
+    \textbf{b.} Categoricality of each area's own neurons: one $z$ per area against Gaussians matched to it and passed through the same clustering pipeline \parencite{posani2026}. Shading, $|z| < 1.96$; 9 of 22 areas exceed it.
+    \textbf{c.} $K \times K$ Procrustes distances between areas, ordered by position in the cortical hierarchy (arrow).
+    \textbf{d.} Procrustes distance against log anatomical connectivity \parencite{harris2019}; each dot is a pair of areas (Spearman $\rho = -0.51$, $p = 2\times10^{-16}$).
+    \textbf{e.} \textit{Left}, visualization of region space using MDS of \textit{c}, coloured by hierarchy.  \textit{Right}, hierarchy position predicted from the full distance matrix by ridge regression, one area held out at a time ($\rho = 0.59$, $p = 0.005$).
+    \textbf{f.} The region space is not partitioned: the best silhouette between areas does not exceed a Gaussian matched to the embedding ($z = +0.47$, $p = 0.27$).
+    \textbf{g.} Standardised coefficients of one model in which the 8 task variables and connectivity compete to explain the pairwise distances, from disjoint halves of each area's neurons. Filled bars, $p < 0.05$; licking dominates.
+    \textbf{h.}  Non-human primates \parencite{Siegel2015-cz}: two monkeys performing a context-dependent decision task, 63 conditions, while recording from $K = 7$ cortical areas ($n = 7458$ units, pooled across subjects).
+    \textbf{i.} \textit{Left}, categoricality as in \textbf{b}, on the $n = 964$ units with split-half reliability $r > 0.2$ (\textit{\nameref{sec:methods}}; \cite{posani2026}); 4 of 7 areas exceed $|z| = 1.96$. \textit{Right}, the areas are again not partitioned ($z = -0.37$, $p = 0.61$).
+    \textbf{j.} Region space as in \textbf{e}, for the 11 area $\times$ monkey populations, each measured on two independent halves of the trials (different dots with same colors).
+    \textbf{k.} Hierarchy position of a held-out trial half, predicted by ordinal regression; colour is the probability over 60 fits, subject above and area below each column.}
+    \label{fig:allen}
+\end{figure}
+After establishing our approach with simulations, we can ask two open questions in neurophysiological recordings: 
+
+\textit{Does the ubiquity of decodable information across the brain imply that population geometry is correspondingly uniform?} 
+
+\textit{Does categorical structure at the level of neurons imply categorical
+structure at the level of regions?}
+
+We asked this in two datasets of multi-regional recordings from mice and nonhuman primates performing a decision-making task \parencite{angelaki2025brain,Siegel2015-cz}, testing the conventional view that representations morph along an anatomical hierarchy from early sensory to higher-order areas \parencite{petersen2024principles}. This view has been challenged by recent reports that most task and behavioral variables are decodable from nearly any brain region \parencite{findling2025brain,angelaki2025brain, Lloreda2025,rosen2026distributed}, though it remains unclear whether the joint arrangement of the entire set of variables is also comparable across regions.
+
+
+First, we studied population-level activity across many regions in data publicly released by the International Brain Laboratory Brainwide Map \parencite{angelaki2025brain} and to the encoding model fit to it by \textcite{posani2026}, in which each neuron is summarized by its time-varying coefficients for $8$ task and behavioral variables (block, stimulus side, contrast, choice, outcome, wheel, whisking and licking). \textcite{posani2026} asked whether cortex is organized into discrete types or a continuum at the level of single neurons, testing whether these coefficient profiles fall into categories both within each area and with neurons pooled across areas and subjects. Here we ask the same of the areas themselves: rather than pooling neurons, we keep each area's neurons together and treat the area as a population, so that it is areas, and not neurons, that are compared to one another (\textbf{Fig. }\ref{fig:schematic}). In later sections we apply the same logic to individual animals, asking whether subjects rather than areas or neurons fall into groups. Following \textcite{posani2026}, we retained neurons whose encoding model improved on a variable-agnostic null ($\Delta R^2 > 0.015$) and areas with at least $50$ such neurons, leaving $4617$ neurons across $K = 22$ cortical areas. 
+
+Applying the clustering pipeline of \textcite{posani2026} to each area separately $9$
+of $22$ areas were significantly categorical (\textbf{Fig.}~\ref{fig:allen}b).
+As our simulations showed, however, this does not tell whether the areas
+themselves fall into clusters
+(\textbf{Fig.}~\ref{fig:schematic}). We therefore placed the areas in a common space, computing pairwise Procrustes
+distances between their populations (\textbf{Fig.}~\ref{fig:allen}c). Areas that
+are more strongly connected anatomically had more similar geometry (Spearman
+$\rho = -0.51$, $p = 2\times10^{-16}$; \textbf{Fig.}~\ref{fig:allen}d), 
+using the connectivity matrix of \textcite{harris2019}. This replicates the link \textcite{posani2026} report between connectivity and single-neuron selectivity, now for the geometry of whole populations rather than for averaged tuning. On its own, however, it leaves open how the areas themselves are organised. Groups of regions that are graded, unstructured or genuinely clustered all produce correlations of this type (\hl{sup}), because the correlation reports how areas are arranged with respect to connectivity and not whether they fall into discrete types. Answering that requires the region space itself, which is what a shape metric provides.
+
+Below we show with several complementary analyses that regions are organised
+along a continuous sensory-to-associative axis (\textbf{Fig.}~\ref{fig:allen}e,f). First, by visualizing the region space in 2D and coloring each region by their cortical hierarchy location we can see that regions seem to be organized by hierarchy \textbf{Fig.}~\ref{fig:allen}e, \textit{left}).  We confirmed this with ridge
+regression (\hl{Methods}) trained on all but one area predicted the held-out area's position in
+the cortical hierarchy above chance ($\rho = 0.59$, $p = 0.005$;
+\textbf{Fig.}~\ref{fig:allen}e, \textit{right}). Importantly, this space is not
+partitioned, as testing for clusters directly in region space returns no evidence of clusters
+($z = +0.47$, $p = 0.27$; \textbf{Fig.}~\ref{fig:allen}f). Cortical areas are thus
+ordered without being grouped: geometry varies continuously along the hierarchy
+rather than falling into discrete regional types.
+
+Finally, we asked which variables drive these geometric differences, fitting a
+single model in which the $8$ task and behavioural variables and anatomical
+connectivity compete to explain the pairwise distances, with each area's
+predictors and distances computed from disjoint halves of its neurons so that
+shared noise cannot inflate the fit. Licking selectivity dominated
+(\textbf{Fig.}~\ref{fig:allen}g), indicating that the axis along which cortical
+geometry varies is mostly driven by the neural correlates of licking behavior.
+
+
+We then tested whether this pattern generalizes to nonhuman primates using multi-regional recordings from two monkeys performing a context-dependent decision task \parencite{Siegel2015-cz}.  Applying the same clustering pipeline to each of the $K = 7$ cortical areas separately (using $n = 964$ units with split-half reliability $r > 0.2$), $4$ of $7$ areas showed significant categoricality (\textbf{Fig.}~\ref{fig:allen}i, \textit{left}). Unlike in mice, where significant categoricality was confined to sensory
+areas, in the monkey it extended to associative cortex, with FEF and PFC as
+categorical as V4 (\textbf{Fig.}~2i, \textit{left}). We confirm that, as in the mice data, brain regions were not organized in clusters, as testing for clusters directly in region space returned no evidence of discretisation ($z = -0.37$, $p = 0.61$; \textbf{Fig.}~\ref{fig:allen}i, \textit{right}). Note that this analyses does not imply that regions are similar to each other. In fact, we show strong differences with several analyses. First, we visualized the region space from a distance matrix of pairwise Procrustes distances between area populations across different regions, measured independently on two halves of the trials (\textbf{Fig.}~\ref{fig:allen}j). Next, hierarchy position, predicted from the geometry of held-out trial halves using ordinal regression, was recovered above chance across subjects and areas (\textbf{Fig.}~\ref{fig:allen}k), confirming that primate cortical areas, like mouse cortex, are ordered along a continuous anatomical axis without falling into discrete types.
+
+In sum, by using shape distances to compare neural representations across brain regions, we have recovered anatomical hierarchy in both mice and monkeys. Further, despite being organized hierarchically, regions did not formed clusters and its organization was more in line with a gradient change of selectivity.
+Moreover, by exploiting the metric properties of shape space we could perform both supervised and unsupervised learning methods on that space (i.e. linear regression, clustering, respectively) and rigorously quantify hypotheses developed through visual inspection (e.g. region organization by anatomical hierarchy in PCA space was quantified using regression or clustering in the full space).
+

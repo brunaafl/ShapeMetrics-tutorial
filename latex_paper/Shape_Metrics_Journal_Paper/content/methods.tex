@@ -1,0 +1,186 @@
+
+All experimental data analyzed in this study was previously collected and described in several publications (\cite{duszkiewicz,Siegle2021-hs, Siegel2015-cz, iblreproducibility}).
+
+\subsection{Shape Metrics}
+
+\subsubsection{Procrustes distance between neural populations of unequal sizes}
+
+In the main text, we introduced the Procrustes distance calculation as an orthogonal alignment between two neural population recordings, represented by $N \times M$ matrices $\mbX_i$ and $\mbX_j$ (see eq.~\ref{eq:procrustes-distance}).
+This assumes that each neural recording consists of $N$ neurons, because the transformation matrix $\mbQ$ must be square (i.e. $N \times N$) in order to be orthogonal.
+
+This assumption is unrealistic because most experimental recordings will yield different numbers of neurons.
+However, the Procrustes distance can be easily generalized to this scenario while preserving the essential geometric intuition of our main narrative.
+We demonstrate this in a few ways below.
+
+For the rest of this subsection we consider $\mbX_i$ be an $N_i \times M$ matrix and $\mbX_j$ be an $N_j \times M$ matrix where $N_i \neq N_j$.
+We assume that the rows of $\mbX_i$ and $\mbX_j$ have been preprocessed to have mean zero.
+
+\textbf{Option 1 --- PCA preprocessing.}
+The first strategy we consider is using PCA to project each dataset onto an $N$-dimensional subspace.
+If the projection onto this lower-dimensional space captures a large fraction of variance in each dataset, then we intuitively expect the Procrustes distance within this low-dimensional space to be a reasonable measure of representational similarity.
+
+Formally, let $\mbP_i$ be an $N \times N_i$ orthonormal projection matrix onto the top $N$ principal component subspace of $\mbX_i$ (i.e. top $N$ eigenvectors of $\mbX_i \mbX_i^\top$).
+Similarly, let $\mbP_j$ be a $N \times N_j$ orthonormal projection matrix onto the top $N$ principal component subspace of $\mbX_j$.
+Then define $\widetilde{\mbX}_i = \mbP_i \mbX_i / \Vert \mbP_i \mbX_i \Vert_F$ and $\widetilde{\mbX}_j = \mbP_j \mbX_j / \Vert \mbP_j \mbX_j \Vert_F$ as normalized projections of the data onto the top $N$ principal components.
+We suggest to normalize by $\Vert \mbP_i \mbX_i \Vert_F$ and $\Vert \mbP_j \mbX_j \Vert_F$ to account for the fact that there will likely be a mismatch in overall variance between the two datasets.
+That is, the ``size'' of the manifolds in the projected space may be quite different, simply because one system had more neurons and thus more variance to begin with.
+Another reasonable normalization strategy would be to set $\widetilde{\mbX}_i = \mbP_i \mbX_i / \sqrt{N_i}$ and $\widetilde{\mbX}_j = \mbP_j \mbX_j / \sqrt{N_j}$.
+
+If the projection onto a lower, $N$-dimensional space captures a large fraction of variance in each dataset, then we intuitively expect the Procrustes distance between $\mbP_i \mbX_i$ and $\mbP_j \mbX_j$ to be a reasonable measure of representational similarity (since we are only neglecting low-variance dimensions).
+Thus, to retain maximal variance in each dataset we can set $N = \min(N_i, N_j)$ when comparing a pair of neural systems.
+When making comparisons among $K$ systems, we must take $N = \min(N_1, \dots, N_K)$ to preserve symmetry and the triangle inequality.
+
+\textbf{Option 2 --- Generalize the definition of Procrustes distance.}
+While the approach outlined above is intuitive, it is essentially a preprocessing trick that circumvents deeper issues.
+Furthermore, it is hard to justify in cases where non-trivial amounts of variance are lost by projecting the data down into $N$ dimensions.
+We now outline a more elegant approach to think about the problem and show that it largely coincides with the intuitive PCA-driven approach described above.
+
+We begin by stating a classical mathematical result that the Procrustes distance between two matrices can be written in a closed form~\parencite{schonemann1966generalized}.
+Specifically, the squared distance can be written as:
+\begin{equation}
+\label{eq:procrustes-closed-form-1}
+\min_{\mbQ \in \cO(N)} \Vert \mbQ \mbX_i - \mbX_j \Vert_F^2 = \Tr[ \mbX_i \mbX_i^\top ] + \Tr[ \mbX_j \mbX_j^\top ] - 2 \Vert \mbX_i \mbX_j^\top \Vert_*
+\end{equation}
+where $\Vert \mbX_i \mbX_j^\top \Vert_*$ denotes the sum of the singular values of $\mbX_i \mbX_j^\top$ and is called the \textit{nuclear norm} or \textit{Schatten 1-norm}.
+We provide a derivation of this classic result in \hl{appendix}.
+
+The equation above describes the case where $N_i = N_j$ (i.e. the two systems have equal numbers of neurons), but the expression on the right hand side can be calculated even when $N_i \neq N_j$ because the nuclear norm is well-defined even when $\mbX_i \mbX_j^\top$ is rectangular.
+
+
+\subsection{Downstream Analyses}
+
+Shape metrics provide a strategy for computing a $K \times K$ distance matrix, $\mbD$, that captures pairwise dissimilarity across a collection of $K$ neural systems.
+Once this distance matrix is obtained, there are a number of analyses that can be immediately performed using off-the-shelf tools.
+
+\subsubsection{Multidimensional Scaling (MDS)}
+
+We use a public implementation of metric MDS from \texttt{scikit-learn} \parencite{scikit}.
+Briefly, given a $K \times K$ matrix $\mbD$ of pairwise distances, MDS uses iterative parameter updates in an attempt to solve the following nonconvex optimization problem
+\begin{equation}
+\underset{\mbu_1, \dots, \mbu_K}{\text{minimize}} \quad \sum_{i=1}^K \sum_{j=i+1}^K \left ( \mbD_{ij} -  \Vert \mbu_i - \mbu_j \Vert_2 \right )^2
+\end{equation}
+where $\mbu_1, \dots, \mbu_K \in \reals^d$ are vectors within a $d$-dimensional embedding space.
+Once obtained, these vectors can be used for any downstream analysis (e.g. running PCA to visualize each neural system in a low-dimensional space; see Figures \ref{fig:synth}b-c, \ref{fig:hdcells}c, \ref{fig:allen}c). 
+However, MDS comes at the cost of introducing distortion into the metric space. 
+We quantify the distortion of distance $\mbD_{ij}$ as
+\begin{equation}
+\max \left ( \frac{\mbD_{ij}}{\Vert \mbu_i - \mbu_j \Vert_2}, \frac{\Vert \mbu_i - \mbu_j \Vert_2}{\mbD_{ij}} \right ) 
+\end{equation}
+and report the median distortion across all distance values.
+
+\subsection{Datasets and Analyses}
+
+\subsubsection{Simulated Dataset (Fig. \ref{fig:synth})}
+
+We randomly generated $K = 40$ sets of tuning curves (corresponding to different ``networks'' or ``subjects'').
+Each simulated network consisted of $N = 100$ neurons with tuning curves given by a 2-parameter family of functions:
+\begin{equation}
+\label{eq:methods-tuning-curve-shape}
+f(\theta) = \exp \left ( -\kappa \cos (\theta - \mu)\right )
+\end{equation}
+Intuitively, $\mu \in [-\pi, \pi)$ describes the peak of the tuning curve and $\kappa \geq 0$ inversely controls the width of the tuning.
+Under this model, the peak firing rate of each neuron is equal to one.
+Note that \cref{eq:methods-tuning-curve-shape} is proportional to the density of a von Mises distribution, for which $\kappa$ is called the concentration parameter and $\mu$ is called the location parameter.
+
+To generate the dataset, we specify a value of $\kappa$ and a distribution over $\mu$ for each subject and sample $N=100$ random tuning curves.
+The concentration parameter for each subject, $\kappa$, was sampled uniformly between 1 and 4; all tuning curves from each subject were assigned the same $\kappa$ parameter.
+The location parameter for each tuning curve, $\mu$, was sampled from a von-mises distribution with mean zero and a concentration parameter $\gamma$ that was drawn uniformly between 0 and 3 for each subject.
+Intuitively, a simulated network will roughly have uniformly spaced tuning curves when the concentration parameter controlling the distribution of $\mu$ is close to 0.
+Conversely, a simulated network will have tuning curves that are ``bunched'' around $\theta=0$ when this concentration parameter is close to 3.
+
+We computed the acuity of each subject by taking the logarithm of the expected Fisher Information (FI) across neurons evaluated at $\theta=0$.
+Specifically, under the assumption of isotropic Gaussian noise with variance $\sigma^2$, the expected FI is given by
+\begin{equation}
+\label{eq:fish-info}
+I = \expect \left [ \frac{f'(0)^2}{\sigma^2} \right ] 
+\end{equation}
+where the expected value is taken over randomly sampled tuning curves, $f$.
+Note that in our simulated data we only get to observe $N=100$ tuning curves to compute the Procrustes distances between network pairs.
+This simulates a realistic scenario where we only get to experimentally record a small fraction of the neural circuit underlying behavioral performance.
+Nonetheless, if $N$ is large enough and the shape of the neural representation is smooth/low-dimensional, we can expect the empirical Procrustes distance to do a reasonable job of capturing the ``true'' geometry of the system.
+
+Applying some basic algebraic manipulations to \cref{eq:fish-info}, we obtain
+\begin{equation}
+I = \frac{\kappa^2}{\sigma^2} \int \sin^2(\mu) \exp(-2\kappa \cos(\mu)) p(\mu) \textrm{d}\mu
+\end{equation}
+where $p(\mu)$ is the density of a von-mises distribution with mean $\theta=0$ and concentration parameter $\gamma$.
+Although some further simplifications are possible, the form of the resulting integral does not appear to have a simple analytic solution.
+Thus, we numerically computed it to high precision to obtain $\log I$, the simulated ``acuity'' score for each subject.
+We set $\sigma^2 = 1$ in this calculation; this choice is of little consequence since it only introduces an overall scaling into the simulation.
+
+
+% \subsection{Dissimilarity matrix}
+
+% All analyses performed here started by constructing a dissimilarity matrix. All entries in this matrix consisted of a distance in shape space, but depending on the analyzes, this could be the distance between subjects, conditions, or regions. Unless stated otherwise, dissimilarity matrices where cross-validated (see below).
+
+% \subsection{Permutation metric}
+
+% The group of permutation matrices $\mathcal{P}(N)$ is a subgroup of $\cO(N)$ (see also eq. \ref{eq:generalized-euclidean-shape-metric}), therefore a distance calculated on neurons matched one-to-one across networks is also a rigorous metric. To evaluate this metric, we optimize to the set of neuron permutations that maximally align two given networks. As shown in \cite{Williams2020}, this can be reformulated as a problem in combinatorial optimization known as the linear assignment problem. 
+
+% \subsection{Supervised and unsupervised learning in shape space}
+% We leveraged the rigorous metric space defined by shape analyses to perform different downstream analyzes, notably regression, clustering, and PCA. For these analyzes, we used off-the-shelf libraries available in scikit-learn (\cite{scikit}). For the ordinal regression performed in (Fig. \ref{fig:miller}d), we used threshold-based ordinal logistic regression (LogisticAT from pythonhosted.org/mord). For hierarchical clustering performed in Fig. \ref{allen}, we used scipy \parencite{scipy}. When regressing shape spaces against behavioral statistics (e.g. Fig. \ref{fig:hdcells}c, right or Fig. \ref{fig:ibl}d) we always did so using different partitions as targets and features (see Cross-valdiation, below)  Before performing dimensionality reduction of a dissimilarity matrix using PCA, we embedded its vectors in shape space into euclidean space using multi-dimensional scaling, an approach that has been shown to minimize distortions (\cite{Williams2021}).
+
+%  \subsection{Cross-validation}
+% We employed different types of cross-validation before trial-averaging. Typically, we averaged independent trials/time-points, leading to independent partitions across trials/time-points. Additionally, we also performed a more conservative approach in which we partitioned also across neurons of the same animal, leading to completely independent dataset partitions from the same animal (Fig. \ref{fig:hdcells}). This process was repeated n=1000 times, unless stated otherwise.
+
+% \begin{center}
+% \begin{tikzpicture}
+
+% % Matrix outline
+% \draw[thick] (0, 0) rectangle (8, 6);
+
+% % Horizontal partition (across Trials)
+% \draw[thick, dashed] (0, 3) -- (8, 3);
+
+% % Vertical partition (across Neurons)
+% \draw[thick, dashed] (4, 0) -- (4, 6);
+
+% % Labels
+% \node at (4, 6.3) {Trials};
+% \node[rotate=90] at (-0.3, 3) {Neurons};
+
+% % Labels for partitions
+% \node at (2, 4.5) {training partition};
+% \node at (2, 1.5) {ignored};
+
+% \node at (6, 4.5) {ignored};
+% \node at (6, 1.5) {testing partition};
+% \end{tikzpicture}
+% \end{center}
+
+
+\subsubsection{Head direction coding in mice (Fig. \ref{fig:hdcells})}
+
+We analyzed two datasets made public by \textcite{duszkiewicz}.
+Spiking activity from cells in the mouse postsubiculum (PoSub) was collected using silicone probes during open-field exploration. 
+The first dataset consisted of $31$ sessions/subjects and a total of $2691$ neurons. The second dataset is similar to the first one, but included a salient landmark that was rotated 90$^{\circ}$  back and forth every 200s for a total of 16 rotations. 
+
+In both datasets, spikes were counted in bins of 1$^{\circ}$ of the head direction and then bins were smoothed with 12$^{\circ}$  s.d. Gaussian filters, as done in the original publication \parencite{duszkiewicz}.
+Each partition for cross-validation was then denoised by keeping only the first 20 principal components (see Fig. \ref{fig:hdcells}a).  
+
+To perform leave-one-subject out decoding, we aligned all subjects to a common reference. The common reference was chosen randomly and did not change the results. We aligned each subject manifold using n=20 randomly chosen, but equally spaced, head direction bins. Importantly, we did not include these angles or $\pm$6 bins around them in the training set for head-direction decoding.
+
+\subsubsection{Allen brain observatory dataset (Fig. \ref{fig:allen})}
+
+We analyzed the ``natural movie three'' stimulus set of the Neuropixels---Visual Coding dataset in the Allen Brain Observatory (\cite{Siegle2021-hs}).
+Data were obtained and analyzed through the AllenSDK python package.
+We pooled data from 32 recording sessions, which is the total number of sessions employing the \textit{brain observatory 1.1} stimulus set.
+Spike counts were binned at the video presentation frame rate ($30^{-1}$ second time bins), averaged across ten trials, and smoothed by convolving with a Gaussian kernel (standard deviation of 20 time bins).
+This resulted in $M=3600$ time bins of activity measurements for each neuron.
+Neurons were then pooled across sessions and separated into subregions using the most fine-grained anatomical regions defined by the Allen Brain Atlas.
+We excluded brain regions with fewer than $50$ neurons and additionally excluded subregions with the acronyms \texttt{\{MB, alv, ccs, dhc, fp, or\}} which represent either white matter or midbrain neurons that were not assignable to any specific nucleus.
+This resulted in a total of $K=55$ brain regions.
+To denoise these datasets and speed up calculations, we projected each dataset onto the top $N=50$ principal components before analysis.
+
+\subsubsection{Nonhuman primate visually guided decision-making task (Fig. \ref{fig:miller})}
+
+Acute recordings from 7 regions of the monkey cortex were performed using single tungsten/parylene electrodes (\cite{Siegel2015-cz}). Monkeys were trained to perform a context-dependent decision-making task. The stimulus consisted of dots moving in a random direction and of a random color. 
+
+We computed condition-averaged responses (n=64 conditions, 4 colors x 4 directions x 4 contextual cues; \cite{Siegel2015-cz}) from $N=7542$  multiunits recorded from 4 brain regions from subject R, and 7 regions from subject P (Fig. \ref{fig:miller}A). For each condition, we averaged two independent sets of trials separately (folds, in Fig. \ref{fig:miller}). We repeated this process 10 times, leading to 10 datasets consisting of 2 independent folds of 11 brain regions. Finally, to avoid across-area differences to be dominated by different dataset sizes, we subsampled each dataset to n=80 neurons and reduced their dimensionality to N=5 using PCA, leading to a data tensor of dimensions 2 x 11 x 5 for each condition that we analyse using shape metrics. All the analyses were repeated 100 times and we report the averages. 
+
+\subsubsection{International Brain laboratory dataset (Fig. \ref{fig:ibl})}
+\hl{add autism dataset}
+We analysed a subset of the IBL dataset published in \cite{iblreproducibility}. Briefly, the IBL labs conducted Neuropixels recordings from the same brain regions in head-fixed mice during a standardized decision-making task, where the mice reported the perceived position of a visual grating. The experiment followed a uniform pipeline across all labs, including standardized methods for surgery, behavioral training, recordings, histology, and data processing. We focused here exclusively on behavior and spike counts recordings. 
+
+In addition to the original quality control, we only analyzed subjects from which at least $n = 100$ neurons were recorded and with at least $n = 40$ trials per condition were recorded. \hl{Moreover, we only focused on data collected during balanced blocks (i.e. in which the probability of rewarded left and right responses was the same). In total, we analysed data from $n = 56$ subjects.}
+

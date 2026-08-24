@@ -1,17 +1,26 @@
 """Categoricality in neuron space says nothing about whether regions form types.
 
-Two scenarios, one generator, one figure.  A region's neurons are an elongated
+Three scenarios, one generator, one figure.  A region's neurons are an elongated
 cloud in tuning-shape space: `amount` (a) sets how bimodal it is along its long
 axis (how categorical the region is), `kind` (psi) sets that axis's orientation
 (what the region is categorical *about*).
 
-  SCENARIO 1  "a continuum"
-      regions vary continuously: `amount` sweeps from 0 to ~1 and `kind` sweeps
-      with it.  So the distribution of per-region categoricality is SPREAD OUT --
-      some regions are strongly categorical, some not at all -- and in region
-      space the regions lie on a continuum with no types in it.
+The paper calls these three fields "gradient", "unstructured" and "clustered";
+the scenario keys below are the older names and mean the same things.
 
-  SCENARIO 2  "three kinds"
+  SCENARIO 1  "continuum"  (paper: GRADIENT)
+      regions vary continuously: `amount` sweeps AMOUNT_MIN..AMOUNT_MAX and
+      `kind` sweeps with it.  So the distribution of per-region categoricality is
+      SPREAD OUT -- some regions are strongly categorical, some not at all -- and
+      in region space the regions lie on a continuum with no types in it.
+
+  SCENARIO 2  "no_gradient"  (paper: UNSTRUCTURED)
+      the same set of `amount` values and the same set of `kind` values as
+      scenario 1, but the pairing between them is permuted away.  The region
+      cloud and the categoricality distribution are therefore both unchanged;
+      only the gradient -- the correspondence between the two -- is destroyed.
+
+  SCENARIO 3  "kinds"  (paper: CLUSTERED)
       no region is categorical at all (`amount` = 0, so every per-region z sits at
       zero), but `kind` takes THREE discrete values, so region space contains
       three clean clusters.
@@ -159,7 +168,32 @@ def scenario(name, seed=0, n_regions=N_REGIONS):
         amounts = AMOUNT_MIN + (AMOUNT_MAX - AMOUNT_MIN) * t
         psis = (-PSI + 2 * PSI * t) * PSI_SPAN
         colour = t
+    elif name == "no_gradient":
+        # identical to "continuum" except that `a` is permuted across regions.
+        # The set of psi values and the set of a values are both unchanged, so the
+        # region cloud and the categoricality distribution are the same; only the
+        # correspondence between them -- the gradient -- is destroyed.
+        rng = np.random.default_rng(seed)
+        t = np.sort(rng.uniform(0, 1, n_regions))
+        amounts = rng.permutation(AMOUNT_MIN + (AMOUNT_MAX - AMOUNT_MIN) * t)
+        psis = (-PSI + 2 * PSI * t) * PSI_SPAN
+        colour = t
     elif name == "kinds":
+        # NO region is categorical: `a` = 0 throughout, so every per-region z
+        # sits at zero.  All the structure is in `kind`, which takes N_KINDS
+        # discrete values -- so the field is unambiguously clustered in region
+        # space while containing not one clustered region.  That is the whole
+        # claim of the panel, and setting `a` = 0 states it in its strongest
+        # form.
+        #
+        # `a` is free here because it does not touch the region geometry: it
+        # leaves the second moment of a region's weights untouched, and it is
+        # the second moment that Procrustes compares.  Verified directly --
+        # against `a` drawn over [AMOUNT_MIN, AMOUNT_MAX] as the other two
+        # scenarios do, the region-space result is unchanged across seeds 0-2:
+        # silhouette 0.725-0.737 vs 0.721-0.761, z +8.6/+10.1 vs +9.8/+10.7,
+        # p = 0.005 (the floor, 200 null draws) in all six runs, and
+        # between/within-kind separation 6.0-6.4 vs 5.8-7.0.
         amounts = np.zeros(n_regions)
         psis = np.tile(np.linspace(-PSI, PSI, N_KINDS), n_regions // N_KINDS)
         colour = np.tile(np.arange(N_KINDS), n_regions // N_KINDS)

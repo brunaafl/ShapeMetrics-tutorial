@@ -84,17 +84,41 @@ def null_stats(obs, null):
 
 
 # ------------------------------------------------- the vendored Posani pipeline
-def clustering_space(X):
-    """Standardise each neuron across its features, then PCA to 90% variance."""
+def clustering_space(X, n_comp=None, scale=True):
+    """Standardise each neuron across its features, then PCA.
+
+    `scale=False` centres each neuron without dividing by its standard deviation.
+    The division is what Posani et al.'s pipeline does, and it is right when every
+    neuron carries real tuning: it stops loud neurons from dominating. It is wrong
+    when a large fraction of the units are unreliable, because dividing a
+    near-flat curve by its own tiny standard deviation turns noise into a
+    full-amplitude curve, and a cloud of those is close to uniform on the sphere
+    -- which is maximally unclusterable and drags the whole sample below its own
+    null. Centring keeps amplitude as the signal it is.
+
+    By default PCA keeps 90% of the variance, which is Posani et al.'s rule and
+    lets the data choose its own dimensionality. Pass `n_comp` to fix it instead.
+
+    Fixing it matters when data and null are compared: silhouette falls as
+    dimensionality rises, so if the null happens to land in fewer dimensions than
+    the data it wins on dimensionality rather than on lumpiness. The 90% rule is
+    safe when the two land in the same place and misleading when they do not --
+    which is worth checking rather than assuming.
+    """
     _, dr = _posani()
-    Xs = (X - X.mean(1, keepdims=True)) / X.std(1, keepdims=True)
-    return dr(Xs, dict(method="pca", exp_var=0.9))
+    Xs = X - X.mean(1, keepdims=True)
+    if scale:
+        Xs = Xs / X.std(1, keepdims=True)
+    kw = dict(method="pca", exp_var=0.9) if n_comp is None else \
+        dict(method="pca", ncomp=int(n_comp))
+    return dr(Xs, kw)
 
 
-def pipeline_silhouette(X, k_lim=(2, 11), n_init=10):
+def pipeline_silhouette(X, k_lim=(2, 11), n_init=10, n_comp=None, scale=True):
     """Best mean silhouette over k, for neurons put through `clustering_space`."""
     clustering, _ = _posani()
-    return float(clustering(clustering_space(X), "kmeans", n_clus_lim=list(k_lim),
+    return float(clustering(clustering_space(X, n_comp, scale), "kmeans",
+                            n_clus_lim=list(k_lim),
                             dis_metric="euclidean", n_init=n_init)["sscores_mean"])
 
 
