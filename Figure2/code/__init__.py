@@ -4,5 +4,8 @@
 subsamples neurons per region and repeats; the shared one reduces to PCs and
 compares once. Same name, different question. Kept apart deliberately.
 """
-from . import (data, decoding, netrep_helpers, procrustes,   # noqa: F401
-               shape, siegel_setup)
+from . import data, decoding, procrustes, shape, siegel_setup   # noqa: F401
+
+# netrep_helpers moved to the shared library -- Figure 3's panels use it too.
+# Re-exported so `paths.figure_code("Figure2").netrep_helpers` still resolves.
+from shapemetrics import netrep_helpers                          # noqa: F401

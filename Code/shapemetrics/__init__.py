@@ -14,6 +14,11 @@ Defaults are the values those copies used, so results and figures are unchanged.
 from . import (cache, clustering, decoding, embedding, metrics,   # noqa: F401
                paths, shape)
 from .cache import cached_npz                                        # noqa: F401
+# NB: `cache` is deliberately NOT re-exported here. `shapemetrics.cache` is
+# already the module imported above, and `from .paths import cache` silently
+# rebound that name to the function -- the same class of collision the
+# palette merge made. Call it as `paths.cache(...)`, which is how the
+# notebooks do; `cached_npz` from the module is exported below as before.
 from .paths import (MissingDataset, derived, external,               # noqa: F401
                     require_env, results, set_figure)
 from .decoding import (decodability, decoding_matrix,                # noqa: F401
@@ -36,7 +41,8 @@ from .metrics import dsd, ssd                                        # noqa: F40
 # Accessed lazily instead, so `import shapemetrics` has no global side effect
 # while `from shapemetrics import plotting` still applies the house style.
 _PLOTTING_NAMES = {
-    "plotting", "DATA_RED", "KIND_COLORS", "NULLC", "NULL_GREY", "PANEL",
+    "plotting", "DATA_RED", "KIND_COLORS", "NULLC", "NULL_GREY", "OBS", "PANEL",
+    "PANEL_SIMPLE",
     "axis_style", "module_palette", "null_hist", "save", "save_stem",
     "simple_null_panel", "typeset",
 }

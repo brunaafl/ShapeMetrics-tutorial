@@ -732,8 +732,16 @@ def coefficients(ax, beta, se, names, pvals, alpha=.05):
 #
 # NOTE the palettes genuinely disagree: NULL_GREY below is "0.75" while NULLC
 # above is a blue. Same role, different colour. Nothing is silently unified --
-# a figure keeps whichever it was drawn with.
-NULL_GREY, DATA_RED = "0.75", "darkred"
+# a figure keeps whichever it was drawn with. Panel size disagrees too: 2.1 here
+# against 1.95 above.
+#
+# The rename that introduced the suffixes was applied to the definitions but not
+# to every use, and the old names were the ones still free: `simple_null_panel`
+# below drew its histogram with the NEW blue NULLC and its data line with a
+# `DATAC` that no longer existed anywhere -- a NameError in four panel notebooks,
+# and, on the line that did not raise, a silent colour change. Both now name the
+# old palette explicitly.
+PANEL_SIMPLE, NULL_GREY, DATA_RED = 2.1, "0.75", "darkred"
 
 def axis_style(ax, xlabel, loc="upper left", headroom=1.22, fontsize=7, legend=True):
     """House style, plus headroom so the legend clears the data."""
@@ -757,8 +765,8 @@ def simple_null_panel(ax, obs, null, xlabel, label_null, label_obs, title=None,
     None to leave matplotlib's defaults alone, which is what the single-panel
     figures do.
     """
-    ax.hist(null, bins=bins, color=NULLC, label=label_null)
-    ax.axvline(obs, color=DATAC, lw=2, label=label_obs)
+    ax.hist(null, bins=bins, color=NULL_GREY, label=label_null)
+    ax.axvline(obs, color=DATA_RED, lw=2, label=label_obs)
     if xlabel_size == "auto":
         xlabel_size = fontsize + 1.5
     if tick_size == "auto":

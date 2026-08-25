@@ -77,8 +77,11 @@ def _known() -> dict:
 
 
 def _load_png(p: Path):
+    # PIL only -- reading a PNG needs no PDF backend. Importing fitz here as well
+    # meant that on a machine without pymupdf the golden PNG failed to load for
+    # the same reason the new one failed to render, and every panel was reported
+    # as unverifiable rather than as a missing dependency.
     try:
-        import fitz                                     # noqa: F401
         from PIL import Image
         return np.asarray(Image.open(p).convert("RGB"), dtype=np.int16)
     except Exception:

@@ -1,7 +1,9 @@
 # Copy to data_roots.toml (gitignored) and point at wherever the raw data lives.
 #
-# Only needed by scripts in extract/. A figure notebook reads Data/derived/,
-# which is tracked, so a fresh clone reproduces every figure without this file.
+# NOT needed to run anything in Figure1..4 except the four raw-data notebooks
+# listed in the README -- Data/derived/ is tracked, so a fresh clone reproduces
+# every figure and nearly every panel without this file. It is for `extract/`
+# and for those four.
 #
 # Resolution order: $SHAPEMETRICS_DATA, then this file, then Data/external.
 
@@ -9,10 +11,11 @@
 default = "~/shapemetrics-data"
 
 [roots]
-# The 67 GB currently sits inside the repo. Prefer moving it OUT of Dropbox:
-# smart-sync can materialise or break symlinks under a synced folder.
+# Paths may be absolute, or relative to the repository root. The 67 GB lives in
+# the pre-refactor tree; prefer moving it OUT of Dropbox, since smart-sync can
+# materialise or break symlinks under a synced folder.
 iblreproducibility = "ibl_analyses/data"
-duszkiewicz2024    = "duszkiewicz_analyses"
-posani2026         = "Posani"
-siegel2015         = "siegel_analyses/data"
+duszkiewicz2024    = "duszkiewicz_analyses"     # Dataset_1..3, 9.8 GB of .mat
+posani2026         = "Posani"                   # rrr_neurons.npz, 178 MB
+siegel2015         = "siegel_analyses/data"     # the 77 MB folds pickle
 noel2025           = "new_IBL_analyses/data_asd"

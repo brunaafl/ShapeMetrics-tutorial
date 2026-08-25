@@ -5,7 +5,17 @@ from pathlib import Path
 
 from shapemetrics import paths
 
-# rrr_neurons.npz is 178 MB -- the large-derived tier, found via data_roots.toml.
+# Two files hold the same thing at two sizes. `rrr_selective.npz` (14 MB) is the
+# tracked tier: the 4,617 neurons that pass the selectivity criterion below, which
+# is every neuron this analysis ever reads. `rrr_neurons.npz` (178 MB) is the full
+# brain-wide map, the large-derived tier, found via data_roots.toml. Prefer the
+# tracked one, so a fresh clone runs the figure with nothing downloaded; fall back
+# to the full file when it is on the machine.
+#
+# The two are not an approximation of each other: the mask below discards exactly
+# the rows the slim file omits, so `regions`, `counts` and `features()` are
+# identical either way. tools/verify_posani_slim.py asserts that.
+#
 # The two CSVs are small and tracked, so they come from Data/derived/.
 # See Data/README.md; they were previously read out of a git clone nested inside
 # the analysis directory.
@@ -22,6 +32,20 @@ MODULES = {              # coarse cortical groupings, for colouring only
 }
 
 
+def _coefficients() -> Path:
+    """The RRR coefficient file, preferring the tracked subset over the 178 MB one.
+
+    `paths.derived` raises rather than returns a missing path, which is what we
+    want everywhere else -- here it is the "is it there?" test, so catch it and
+    fall back. If neither tier is present the error names the raw file and the
+    script that slims it, which is the more useful of the two messages.
+    """
+    try:
+        return paths.derived("posani2026", "rrr_selective.npz")
+    except paths.MissingDataset:
+        return paths.external("posani2026", "rrr_neurons.npz")
+
+
 class Dataset:
     """Selective neurons, their encoding coefficients, and the region metadata.
 
@@ -35,7 +59,7 @@ class Dataset:
 
     def __init__(self, npz=None, min_neurons=MIN_NEURONS):
         if npz is None:
-            npz = paths.external("posani2026", "rrr_neurons.npz")
+            npz = _coefficients()
         z = np.load(npz, allow_pickle=True)
         self.acronym, self.dR2, self.beta = z["acronym"], z["dR2"], z["beta"]
         self.n_vars, self.n_time = self.beta.shape[1], self.beta.shape[2]

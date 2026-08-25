@@ -1,3 +1,14 @@
+"""Stochastic-metric helpers around the `netrep` package.
+
+Shared, so it lives in the shared library. It was under Figure2/code/, but
+Figure 3's panels reach for it too -- as `paths.figure_code("Figure3").netrep_helpers`,
+which raised AttributeError, because Figure 3 has no such module. Four notebooks
+died on their import cell for that reason alone.
+
+Not imported by `shapemetrics/__init__.py`: it pulls in `netrep` and
+`statsmodels` at module scope, and most of the package has no use for either.
+Import it by name -- `from shapemetrics import netrep_helpers`.
+"""
 import matplotlib.pyplot as plt
 import numpy as np
 from netrep.metrics import LinearMetric

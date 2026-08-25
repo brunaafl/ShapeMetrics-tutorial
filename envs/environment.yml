@@ -45,6 +45,9 @@ dependencies:
       - openpyxl             # supplementary xlsx tables
       - ijson                # streams the 1.3 GB RRR_selectivity.json
       - pypdf                # inspecting PDF figures (page size, embedded fonts)
+      - pymupdf              # tools/verify.py renders panel PDFs to PNG with it;
+                             #   without it the pixel half of the verifier reports
+                             #   'could not render' for every panel and checks nothing
 
       # --- notebooks
       - jupyterlab

@@ -3,23 +3,34 @@
 Named by the paper the data comes from, matching the citation keys in the
 manuscript's `refs.bib`.
 
-## Three tiers
+## Two tiers
 
-The repository as a whole is 67 GB, so `Data/` is a **namespace with a resolver**,
-not a container. What lives here depends on what a fresh clone needs.
+The analysis tree as a whole is 67 GB, so `Data/` is a **namespace with a
+resolver**, not a container. What lives here depends on what a clone needs.
 
-| tier | where | in git | why |
+| tier | where | in git | size |
 |---|---|---|---|
-| **derived, small** | `Data/derived/<paper>/` | **yes** (7.9 MB total) | enough to rebuild the figures |
-| **derived, large** | wherever `data_roots.toml` points | no — see `MANIFEST.toml` | 22–178 MB each |
+| **derived** | `Data/derived/<paper>/` | **yes** | 177 MB total |
 | **raw** | wherever `data_roots.toml` points | no | 67 GB; one file is 29.8 GB |
 
-**The rule: a figure notebook reads only the small tier plus its own `results/`.**
+**The rule: no notebook reads outside `Data/derived/` and its own `results/`.**
 Anything reaching for raw data is an extraction script in disguise and belongs in
 `extract/` — which runs in a different conda environment and writes back here.
 
-That rule is what lets someone clone this repository and reproduce all four
-figures without downloading anything.
+That rule is what lets someone clone this repository and reproduce every figure
+and every panel without downloading anything. It is now true; it used to be an
+aspiration. There was a third tier in between — derived files too large for git,
+listed in `MANIFEST.toml` and found through `data_roots.toml` — and four
+notebooks read it, so those four could not run from a clone. The largest of them
+is now 64 MB in git, which is the price of the rule holding.
+
+The four exceptions are the Figure 3 panel notebooks `canonical_circuit`,
+`inhibitory_analyses`, `inter_animal_variability` and `rotation_Cue`. They read
+the raw `.mat` sessions directly — including `Dataset_3` and the `CellTypes.mat`
+files, which no derived file covers — and they always will. They are exploratory
+analyses that do not feed a compiled figure. They go through `paths.external()`,
+so on a machine without the raw tier they say which dataset is missing and where
+to point, rather than failing later on an empty session list.
 
 ## Datasets
 
@@ -50,17 +61,37 @@ and the `extract/` script that regenerates it — rather than a bare
 `FileNotFoundError` pointing at a stranger's home directory, which is what the
 previous hardcoded paths produced.
 
-## Regenerating the large files
+There is a third accessor, for cached intermediates that a notebook can either
+load or recompute:
 
-`MANIFEST.toml` records each one's size, sha256, the script that produces it, and
-the conda environment that script needs. Verify a copy with:
+```python
+paths.cache("siegel2015", "region_categoricality.npz")
+```
+
+It returns this figure's `results/` copy if one is there, the tracked copy
+otherwise, and — if neither exists — the `results/` path, so the notebook computes
+into `results/` and never writes into `Data/derived/`. Panel notebooks are all
+written as *load the cache, else compute it*, and before this the `else` branch
+was the one a clone always took: the branch that needs the data a clone does not
+have.
+
+## Regenerating the derived files
+
+`MANIFEST.toml` records each one's size, sha256, what it contains, the script or
+notebook that produces it, and the conda environment that needs. Verify a copy
+with:
 
 ```bash
 shasum -a 256 <file>
 ```
 
 Re-extraction needs raw data and the right environment; it is an occasional,
-documented step, not part of running a figure.
+documented step, not part of running a figure. Two of the checks are automated:
+
+```bash
+python tools/verify_posani_slim.py   # the 14 MB Figure 2 file == the 178 MB one
+python tools/check_standalone.py     # nothing outside Data/derived is reachable
+```
 
 ## A note on Dropbox
 

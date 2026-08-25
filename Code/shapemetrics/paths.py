@@ -4,16 +4,22 @@ Before this, finding data meant a `sys.path.insert` and a literal path in every
 notebook -- 18 of the former and 7 of the latter, one naming `/Users/jbarbosa/`,
 a username that does not exist on this machine, so it was already broken.
 
-Data comes in three tiers, and the distinction is the point:
+Data comes in two tiers, and the distinction is the point:
 
-    derived, small   Data/derived/<paper>/     tracked in git, always present
-    derived, large   Data/external/<paper>/    too big for git (170 MB .. )
-    raw              wherever it actually is   67 GB, never copied
+    derived   Data/derived/<paper>/     tracked in git, always present (177 MB)
+    raw       wherever it actually is   67 GB, never copied
 
-**A figure notebook reads only the small tier plus its own results/.** Anything
+**A notebook reads only the derived tier plus its own results/.** Anything
 reaching for raw data is an extraction script wearing a notebook costume and
-belongs in `extract/`. That rule is what lets a fresh clone rebuild all four
-figures without the 67 GB.
+belongs in `extract/`. That rule is what lets a fresh clone rebuild every figure
+without the 67 GB, and `tools/check_standalone.py` is what keeps it true.
+
+There used to be a third tier between them -- derived files too big for git,
+resolved through data_roots.toml -- and four notebooks read it, so those four
+could not run from a clone at all. Those files are now either slimmed
+(rrr_neurons.npz, 178 MB -> 14 MB, losing nothing any analysis reads) or simply
+tracked. `external()` remains, for `extract/` and for the four Figure 3 panels
+that analyse the raw .mat sessions directly.
 
 Roots resolve in this order, so a collaborator overrides without editing code:
 
@@ -27,6 +33,7 @@ Typical use:
     paths.set_figure("Figure3")
     D   = paths.derived("duszkiewicz2024", "hd_tuning.npz")
     out = paths.results("hd_clustering.npz")
+    f   = paths.cache("siegel2015", "pooled_neurons.npz")   # results/, else tracked
 """
 from __future__ import annotations
 
@@ -129,6 +136,36 @@ def external(dataset: str, *parts: str) -> Path:
             f"{ROOT / 'extract'}.\n"
             f"  Sizes and sources: Data/README.md")
     return p
+
+
+def cache(dataset: str, *parts: str) -> Path:
+    """A recomputable intermediate: this figure's results/ first, the tracked tier second.
+
+    Panel notebooks are written as
+
+        f = OUT / "region_categoricality.npz"
+        if f.exists():  load(f)
+        else:           compute(); np.savez(f, ...)
+
+    which on a fresh clone always takes the `else` branch -- and the `else`
+    branch is the one that needs the data that is not in the clone. The
+    computed answers, though, ARE tracked, under Data/derived/<dataset>/. So
+    look there before deciding nothing is cached:
+
+        f = paths.cache("siegel2015", "region_categoricality.npz")
+
+    Returns the results/ path when that file exists (a local recomputation wins,
+    so deleting it still forces a rebuild), the tracked path when only that
+    exists, and otherwise the results/ path -- which does not exist yet, so the
+    caller computes and writes there, never into Data/derived.
+    """
+    p = results(*parts)
+    if p.exists():
+        return p
+    try:
+        return derived(dataset, *parts)
+    except MissingDataset:
+        return p
 
 
 def set_figure(name: str) -> Path:
