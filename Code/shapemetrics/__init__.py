@@ -48,7 +48,35 @@ _PLOTTING_NAMES = {
 }
 
 
+#: Pre-refactor name -> what it is called now. The merge that folded the older
+#: house style into this package renamed everything that collided, and the
+#: notebooks were not all updated with it -- five call sites across four
+#: notebooks still used an old name, and each died on a bare "has no attribute",
+#: which says nothing about where the thing went. Two of them were worse than a
+#: crash: `sm.save(fig, OUT / "x")` still resolves, because `save` exists -- it
+#: just means something else now, and takes a bare name rather than a stem.
+_RENAMED = {
+    "style": "axis_style",
+    "null_panel": "simple_null_panel",
+    "DATAC": "DATA_RED",
+    # NULLC and PANEL still exist, but as the NEW palette's blue and 1.95in --
+    # a caller wanting the old grey and 2.1in gets the wrong value silently
+    # rather than an error, so they are not listed: nothing here can catch that.
+    # `save` is likewise still a name, with different semantics; see above.
+}
+
+
 def __getattr__(name):                      # PEP 562
+    if name in _RENAMED:
+        raise AttributeError(
+            f"{__name__}.{name} was renamed to {_RENAMED[name]!r} when the two "
+            f"house styles were merged into one module.\n"
+            f"  If you want the older, thinner style (grey null, dark red data, "
+            f"2.1in panels), it is\n"
+            f"  sm.PANEL_SIMPLE / sm.NULL_GREY / sm.DATA_RED and "
+            f"sm.axis_style / sm.simple_null_panel / sm.save_stem.\n"
+            f"  The newer one is sm.PANEL / sm.NULLC / sm.OBS and "
+            f"plotting.save / plotting.null_hist.")
     if name in _PLOTTING_NAMES:
         # import_module, not `from . import plotting`: the latter goes through
         # getattr on this package and so re-enters __getattr__, recursing forever
