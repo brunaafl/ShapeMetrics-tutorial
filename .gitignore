@@ -43,5 +43,5 @@ environment.yml
 environment-ibl.yml
 environment-allen.yml
 
-CLAUDE.md
 answers_*
+test/
