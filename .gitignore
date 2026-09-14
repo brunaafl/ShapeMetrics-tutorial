@@ -42,3 +42,6 @@ figures/
 environment.yml
 environment-ibl.yml
 environment-allen.yml
+
+CLAUDE.md
+answers_*
