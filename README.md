@@ -17,7 +17,7 @@ Using recordings from the International Brain Laboratory brain-wide map (mice pe
 ```bash
 python -m venv ibl
 # Windows
-C:\Users\Your Name> myfirstproject\Scripts\activate
+C:\Users\Your Name> ibl\Scripts\activate
 # macOS/Linux
 source ibl/bin/activate
 
